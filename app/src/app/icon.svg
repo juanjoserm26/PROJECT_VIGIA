@@ -1,0 +1,20 @@
+<svg width="64" height="64" viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#2563eb" />
+      <stop offset="100%" stop-color="#1e40af" />
+    </linearGradient>
+    <radialGradient id="iris" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#60a5fa" stop-opacity="0.9" />
+      <stop offset="60%" stop-color="#2563eb" stop-opacity="0.4" />
+      <stop offset="100%" stop-color="#2563eb" stop-opacity="0" />
+    </radialGradient>
+  </defs>
+  <path d="M32 2 L58 17 L58 47 L32 62 L6 47 L6 17 Z" fill="url(#bg)" stroke="#2563eb" stroke-width="1"/>
+  <path d="M32 7 L53 19.5 L53 44.5 L32 57 L11 44.5 L11 19.5 Z" fill="none" stroke="white" stroke-opacity="0.18" stroke-width="0.8"/>
+  <circle cx="32" cy="32" r="20" fill="none" stroke="white" stroke-opacity="0.3" stroke-width="1"/>
+  <circle cx="32" cy="32" r="16" fill="none" stroke="white" stroke-opacity="0.55" stroke-width="1"/>
+  <circle cx="32" cy="32" r="13" fill="url(#iris)" stroke="white" stroke-opacity="0.85" stroke-width="1.2"/>
+  <path d="M25 27 L32 39 L39 27" fill="none" stroke="white" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M14 22 L14 18 L18 18 M50 18 L46 18 M50 18 L50 22 M14 42 L14 46 L18 46 M50 46 L46 46 M50 46 L50 42" fill="none" stroke="white" stroke-opacity="0.6" stroke-width="1.2" stroke-linecap="round"/>
+</svg>
