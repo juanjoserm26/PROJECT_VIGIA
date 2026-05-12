@@ -12,8 +12,12 @@ import ContactForm from '@/components/ContactForm';
 import Certifications from '@/components/Certifications';
 import BusinessPlan from '@/components/BusinessPlan';
 import Footer from '@/components/Footer';
+import MobileSiteQr from '@/components/MobileSiteQr';
 
 export default function Home() {
+  const initialSiteUrl =
+    process.env.NEXT_PUBLIC_SITE_URL?.trim().replace(/\/$/, '') ?? '';
+
   return (
     <div className="flex flex-col min-h-screen bg-white">
       <Header />
@@ -137,6 +141,8 @@ export default function Home() {
 
       {/* Certifications */}
       <Certifications />
+
+      <MobileSiteQr initialSiteUrl={initialSiteUrl} />
 
       {/* Footer */}
       <Footer />
