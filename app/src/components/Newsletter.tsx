@@ -28,8 +28,9 @@ export default function Newsletter() {
               Suscríbete a nuestro boletín de Seguridad
             </h2>
             <p className="text-blue-100 leading-relaxed">
-              Recibe contenido exclusivo sobre vigilancia inteligente, mejores prácticas de
-              seguridad y novedades de PROJECT VIGIA directamente en tu correo.
+              Boletín para administradores, fuerza pública, empresas, conjuntos y educación: buenas
+              prácticas de seguridad, integración con <strong className="text-white font-semibold">tus</strong> cámaras IP
+              y novedades de PROJECT VIGIA (software en la nube, sin venta de equipos).
             </p>
           </div>
 

@@ -1,67 +1,6 @@
 import Link from 'next/link';
 import Reveal from './Reveal';
-
-interface Plan {
-  name: string;
-  description: string;
-  price: string;
-  priceNote?: string;
-  features: string[];
-  segment: string;
-  highlighted?: boolean;
-}
-
-const plans: Plan[] = [
-  {
-    name: 'Plan Básico',
-    description: 'Pequeños comercios y tiendas',
-    price: '$350.000',
-    priceNote: 'COP / mes',
-    segment: 'Hasta 4 cámaras IP',
-    features: [
-      'Hasta 4 cámaras IP (ONVIF/RTSP)',
-      'Detección básica: robos y atracos',
-      'Notificaciones por email',
-      'Panel web de visualización',
-      'Soporte por correo (48h)',
-      'Almacenamiento de eventos 30 días',
-    ],
-  },
-  {
-    name: 'Plan Avanzado',
-    description: 'Conjuntos residenciales e instituciones educativas',
-    price: '$950.000',
-    priceNote: 'COP / mes',
-    segment: 'Hasta 16 cámaras IP',
-    features: [
-      'Hasta 16 cámaras IP (ONVIF/RTSP)',
-      'Detección avanzada + análisis de patrones',
-      'Alertas por email, WhatsApp y panel web',
-      'Análisis histórico por zona y horario',
-      'Soporte prioritario (24h)',
-      'Almacenamiento de eventos 90 días',
-      'Reportes mensuales automáticos',
-    ],
-    highlighted: true,
-  },
-  {
-    name: 'Plan Enterprise',
-    description: 'Policía Nacional, grandes empresas y municipios',
-    price: '$2.500.000+',
-    priceNote: 'COP / mes',
-    segment: 'Cámaras ilimitadas',
-    features: [
-      'Cámaras IP ilimitadas',
-      'Detección completa + reportes personalizados',
-      'API de integración con sistemas del cliente',
-      'Multicanal: email, WhatsApp, SMS, webhook',
-      'Soporte dedicado 24/7 + SLA personalizado',
-      'Almacenamiento ilimitado de eventos',
-      'Facturación a 30 días',
-      'Configuración on-premise opcional',
-    ],
-  },
-];
+import { marketingPlans } from '@/lib/subscription-plans';
 
 export default function PricingPlans() {
   return (
@@ -74,16 +13,20 @@ export default function PricingPlans() {
           </h2>
           <div className="w-24 h-1 bg-blue-600 mx-auto mb-6"></div>
           <p className="text-lg text-slate-600 max-w-3xl mx-auto">
-            Modelo SaaS con suscripción mensual. Demo gratuita de 30 días para los primeros
-            clientes piloto. Sin contratos a largo plazo, sin compra de hardware adicional.
+            Modelo SaaS con suscripción mensual. Conectamos nuestra IA a las cámaras IP que ya
+            tienes instaladas — <strong className="text-slate-800 font-semibold">no vendemos hardware</strong>. Atendemos
+            a <strong className="text-slate-800 font-semibold">varios perfiles de cliente</strong> (público, privado,
+            residencial, comercio, educación y más), ajustando el plan al número de flujos que
+            quieras monitorear. Activación inmediata, sin contratos a largo plazo y con
+            cancelación en cualquier momento.
           </p>
         </Reveal>
 
         {/* Pricing Cards Grid */}
         <div className="grid md:grid-cols-3 gap-8 lg:gap-6">
-          {plans.map((plan, index) => (
+          {marketingPlans.map((plan, index) => (
             <Reveal
-              key={index}
+              key={plan.slug}
               delay={((index + 1) as 1 | 2 | 3)}
               className={`relative rounded-lg transition-all duration-300 ${
                 plan.highlighted
@@ -144,7 +87,7 @@ export default function PricingPlans() {
 
                 {/* CTA Button */}
                 <Link
-                  href={`/checkout?plan=${plan.name.toLowerCase().replace(/\s+/g, '-')}`}
+                  href={`/checkout?plan=${plan.slug}`}
                   className={`w-full block text-center py-3 px-4 rounded-md font-semibold transition-all mb-8 ${
                     plan.highlighted
                       ? 'bg-blue-600 text-white hover:bg-blue-700 shadow-lg'
@@ -185,6 +128,11 @@ export default function PricingPlans() {
           <p className="text-slate-700 text-base mb-2">
             Todos los planes incluyen <strong>configuración inicial</strong>, capacitación virtual
             y SLA de disponibilidad del 99.5%.
+          </p>
+          <p className="text-sm text-slate-600 mb-3">
+            <strong>Requisito:</strong> contar con cámaras IP compatibles con ONVIF o RTSP
+            (Hikvision, Dahua, Axis y la mayoría de marcas del mercado). PROJECT VIGIA no
+            comercializa cámaras: aprovechamos tu infraestructura existente.
           </p>
           <p className="text-sm text-slate-500">
             Pago vía PSE, transferencia bancaria o tarjeta. Programa de referidos: 15% de

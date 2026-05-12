@@ -13,7 +13,13 @@ export default function PlansPage() {
               Planes de Suscripción
             </h1>
             <p className="text-xl text-slate-200 max-w-3xl mx-auto">
-              Soluciones escalables de vigilancia inteligente para empresas de todos los tamaños. Elige la opción que mejor se adapte a tu organización.
+              Suscripción mensual de software en la nube: integramos IA al video de{' '}
+              <strong className="text-white font-semibold">tus</strong> cámaras IP ya instaladas (no
+              vendemos cámaras). Pensado para{' '}
+              <strong className="text-white font-semibold">
+                sector público, empresas, comercio, conjuntos, educación y comunidad
+              </strong>
+              : elige el volumen de flujos que necesitas monitorear.
             </p>
           </div>
         </div>

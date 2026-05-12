@@ -1,0 +1,16 @@
+# Entorno Python local
+venv/
+.venv/
+__pycache__/
+*.py[cod]
+
+# Modelos YOLO descargados al ejecutar (pesados)
+*.pt
+*.pth
+*.onnx
+
+# Salidas de exportación (opcional: quitar esta línea si quieres versionar samples)
+videos_out/*.mp4
+
+# Credenciales
+.env

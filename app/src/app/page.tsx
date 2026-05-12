@@ -39,7 +39,7 @@ export default function Home() {
               <div className="inline-flex items-center gap-2 mb-5 px-3 py-1 rounded-full bg-blue-600/20 border border-blue-400/30">
                 <span className="w-2 h-2 bg-red-500 rounded-full vigia-blink"></span>
                 <p className="text-blue-200 font-semibold uppercase tracking-widest text-xs">
-                  Vigilancia inteligente con IA · Bucaramanga
+                  SaaS de vigilancia con IA · Bucaramanga
                 </p>
               </div>
             </Reveal>
@@ -54,10 +54,17 @@ export default function Home() {
               </h1>
             </Reveal>
             <Reveal delay={3}>
-              <p className="text-lg sm:text-xl text-slate-200 mb-10 leading-relaxed max-w-2xl">
-                Plataforma SaaS que detecta automáticamente robos, atracos, riñas y
-                comportamientos sospechosos en tiempo real con IA YOLOv8. Compatible
-                con tus cámaras IP existentes mediante ONVIF.
+              <p className="text-lg sm:text-xl text-slate-200 mb-6 leading-relaxed max-w-2xl">
+                Software en la nube que analiza el video de <strong className="text-white font-semibold">tus</strong>{' '}
+                cámaras IP ya instaladas (ONVIF/RTSP) y alerta en tiempo real con IA YOLOv8 ante
+                robos, atracos, riñas y conductas sospechosas.{' '}
+                <strong className="text-white font-semibold">No vendemos cámaras ni equipos:</strong>{' '}
+                integramos la inteligencia a la infraestructura que tú o tu entidad ya tienen.
+              </p>
+              <p className="text-base text-slate-300 mb-10 leading-relaxed max-w-2xl border-l-4 border-blue-500/60 pl-4">
+                Trabajamos con <strong className="text-white font-semibold">varios tipos de clientes</strong>: fuerza
+                pública y alcaldías, empresas y comercio, conjuntos residenciales, instituciones
+                educativas y comunidad en general — no es un producto pensado para un solo sector.
               </p>
             </Reveal>
             <Reveal delay={4}>
@@ -66,7 +73,10 @@ export default function Home() {
                   href="#contact"
                   className="px-8 py-4 bg-blue-600 text-white rounded-md font-semibold hover:bg-blue-700 hover:-translate-y-0.5 transition inline-block text-center shadow-xl hover:shadow-2xl"
                 >
-                  EMPEZAR DEMO GRATUITA
+                  <span className="block">Prueba 14 días gratis</span>
+                  <span className="mt-1 block text-sm font-normal text-blue-100">
+                    Te contactamos para activar el periodo sin complicaciones
+                  </span>
                 </a>
                 <a
                   href="#what-we-do"
@@ -90,7 +100,7 @@ export default function Home() {
                 </div>
                 <div>
                   <p className="text-3xl font-bold text-white">ONVIF</p>
-                  <p className="text-xs text-slate-300 uppercase tracking-wider">Compatible</p>
+                  <p className="text-xs text-slate-300 uppercase tracking-wider">Tus cámaras</p>
                 </div>
               </div>
             </Reveal>

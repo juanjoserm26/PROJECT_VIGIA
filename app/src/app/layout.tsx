@@ -15,16 +15,20 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: "PROJECT VIGIA - Vigilancia inteligente con IA",
   description:
-    "Plataforma SaaS de análisis inteligente de video con IA YOLOv8. Detección automática de robos, atracos y comportamientos sospechosos. Compatible con cámaras IP existentes mediante ONVIF. Bucaramanga, Colombia.",
+    "Plataforma SaaS de análisis de video con IA (YOLOv8). Se conecta a las cámaras IP que ya tienes (ONVIF/RTSP); no vendemos cámaras ni equipos. Clientes en sector público, empresas, comercio, conjuntos residenciales, educación y comunidad. Bucaramanga, Colombia.",
   keywords: [
     "vigilancia inteligente",
     "IA",
     "YOLOv8",
     "ONVIF",
+    "RTSP",
     "videovigilancia",
     "Bucaramanga",
     "seguridad SaaS",
-    "Policía Nacional",
+    "sector público",
+    "conjuntos residenciales",
+    "comercio",
+    "educación",
   ],
   authors: [
     { name: "Jhoan Sebastián García Reyes" },

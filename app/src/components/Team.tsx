@@ -29,20 +29,23 @@ export default function Team() {
           </h2>
           <div className="w-24 h-1 bg-blue-600 mx-auto mb-6"></div>
           <p className="text-lg text-slate-600 max-w-3xl mx-auto">
-            Dos estudiantes de Ingeniería de Sistemas de la Universidad Industrial de Santander
-            apostando por la innovación tecnológica al servicio de la seguridad ciudadana.
+            Dos estudiantes de Ingeniería de Sistemas de la UIS desarrollando una plataforma SaaS
+            para <strong className="text-slate-800 font-semibold">varios sectores</strong>: desde
+            fuerza pública y municipios hasta comercio, conjuntos residenciales y educación. El
+            foco es el software de análisis de video; las cámaras siguen siendo de cada cliente.
           </p>
         </div>
 
         <div className="grid lg:grid-cols-2 gap-10 items-center">
           {/* Team photo */}
-          <Reveal variant="zoom" className="relative rounded-xl overflow-hidden shadow-2xl">
+          <Reveal variant="zoom" className="relative aspect-video w-full overflow-hidden rounded-xl shadow-2xl">
             <Image
-              src="/images/vigia-team.jpg"
-              alt="Equipo PROJECT VIGIA"
-              width={1024}
-              height={576}
-              className="w-full h-auto"
+              src="/images/vigia-team.png"
+              alt="Juan José Rincón y Jhoan Sebastián García — equipo PROJECT VIGIA"
+              fill
+              className="object-cover object-center"
+              sizes="(max-width: 1024px) 100vw, 50vw"
+              priority
             />
           </Reveal>
 

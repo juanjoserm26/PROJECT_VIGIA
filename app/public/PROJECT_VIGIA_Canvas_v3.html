@@ -1,0 +1,335 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>PROJECT_VIGIA — Modelo de Negocios Canvas (v3, alineado al plan 2.0)</title>
+  <style>
+    @page { size: A3 landscape; margin: 10mm; }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: "Segoe UI", system-ui, sans-serif;
+      font-size: clamp(11px, 1.35vw, 13.5pt);
+      line-height: 1.38;
+      color: #1a1a2e;
+      background: linear-gradient(165deg, #e8eef7 0%, #dce8f5 40%, #d4e4f0 100%);
+      min-height: 100vh;
+    }
+    .sheet {
+      max-width: 420mm;
+      margin: 0 auto;
+      padding: clamp(6mm, 2vw, 10mm);
+    }
+    header {
+      text-align: center;
+      margin-bottom: 10px;
+      padding: 14px 16px 16px;
+      border-radius: 10px;
+      background: linear-gradient(120deg, #0d47a1 0%, #1565c0 35%, #00838f 70%, #00695c 100%);
+      color: #fff;
+      box-shadow: 0 4px 14px rgba(13, 71, 161, 0.35);
+    }
+    header h1 {
+      margin: 0;
+      font-size: clamp(20pt, 3.2vw, 28pt);
+      letter-spacing: 0.04em;
+      text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+    }
+    header .sub {
+      margin: 6px 0 0;
+      font-size: clamp(11pt, 1.8vw, 14pt);
+      color: #e3f2fd;
+      font-weight: 500;
+      line-height: 1.35;
+    }
+    /* Bloque destacado: metodología Canvas */
+    .canvas-heading {
+      margin: 14px auto 0;
+      max-width: 95%;
+      padding: 12px 18px;
+      border-radius: 8px;
+      background: rgba(255, 255, 255, 0.18);
+      border: 2px solid rgba(255, 255, 255, 0.45);
+      box-shadow: 0 2px 12px rgba(0, 0, 0, 0.12);
+    }
+    .canvas-title {
+      margin: 0;
+      font-size: clamp(14pt, 2.4vw, 20pt);
+      font-weight: 800;
+      letter-spacing: 0.03em;
+      text-transform: uppercase;
+      color: #fff;
+      line-height: 1.2;
+      text-shadow: 0 2px 4px rgba(0, 0, 0, 0.25);
+    }
+    .canvas-subtitle {
+      margin: 6px 0 0;
+      font-size: clamp(10pt, 1.5vw, 12.5pt);
+      color: #e1f5fe;
+      line-height: 1.45;
+      font-weight: 500;
+    }
+    header .authors {
+      margin-top: 12px;
+      font-size: clamp(9.5pt, 1.35vw, 11.5pt);
+      color: #b3e5fc;
+      line-height: 1.45;
+    }
+    header .authors strong { color: #fff; }
+
+    .bmc {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1.15fr 1fr 1fr;
+      grid-template-rows: auto auto auto;
+      gap: 4px;
+      padding: 4px;
+      border-radius: 6px;
+      background: linear-gradient(180deg, #37474f 0%, #263238 100%);
+      box-shadow: 0 3px 12px rgba(38, 50, 56, 0.25);
+    }
+    .cell {
+      padding: 0;
+      min-height: clamp(130px, 18vmin, 200px);
+      display: flex;
+      flex-direction: column;
+      border-radius: 4px;
+      overflow: hidden;
+      border: 1px solid rgba(255, 255, 255, 0.35);
+    }
+    .cell h2 {
+      margin: 0;
+      font-size: clamp(9.5pt, 1.25vw, 12pt);
+      text-transform: uppercase;
+      letter-spacing: 0.07em;
+      padding: 8px 10px;
+      color: #fff;
+      font-weight: 800;
+      flex-shrink: 0;
+    }
+    .cell ul {
+      margin: 0;
+      padding: 9px 10px 10px 18px;
+      flex: 1;
+    }
+    .cell li {
+      margin-bottom: 5px;
+      font-size: clamp(10pt, 1.15vw, 11.5pt);
+      line-height: 1.4;
+    }
+    .cell li::marker { color: #546e7a; }
+
+    .kp ul { background: #e8f5e9; }
+    .ka ul { background: #fce4ec; }
+    .kr ul { background: #e3f2fd; }
+    .cr ul { background: #f3e5f5; }
+    .ch ul { background: #e0f7fa; }
+    .cs ul { background: #fff3e0; }
+    .cost ul { background: #ffebee; }
+    .rev ul { background: #e8f5e9; }
+
+    /* Bloques con color (estilo canvas clásico / v2) */
+    .kp { grid-column: 1; grid-row: 1 / span 2; background: #c8e6c9; }
+    .kp h2 { background: linear-gradient(90deg, #2e7d32, #43a047); }
+
+    .ka { grid-column: 2; grid-row: 1; background: #f8bbd0; }
+    .ka h2 { background: linear-gradient(90deg, #ad1457, #e91e63); }
+
+    .kr { grid-column: 2; grid-row: 2; background: #bbdefb; }
+    .kr h2 { background: linear-gradient(90deg, #0d47a1, #1976d2); }
+
+    .vp { grid-column: 3; grid-row: 1 / span 2; background: #fff9c4; border: 2px solid #fbc02d; }
+    .vp h2 {
+      background: linear-gradient(90deg, #f57f17, #fbc02d);
+      color: #3e2723;
+      text-shadow: 0 1px 0 rgba(255, 255, 255, 0.35);
+    }
+    .vp ul { background: rgba(255, 253, 231, 0.97); }
+
+    .cr { grid-column: 4; grid-row: 1; background: #e1bee7; }
+    .cr h2 { background: linear-gradient(90deg, #6a1b9a, #8e24aa); }
+
+    .ch { grid-column: 4; grid-row: 2; background: #b2ebf2; }
+    .ch h2 { background: linear-gradient(90deg, #006064, #0097a7); }
+
+    .cs { grid-column: 5; grid-row: 1 / span 2; background: #ffe0b2; }
+    .cs h2 { background: linear-gradient(90deg, #e65100, #ff9800); }
+
+    .cost {
+      grid-column: 1 / span 3;
+      grid-row: 3;
+      min-height: 0;
+      background: #ffcdd2;
+    }
+    .cost h2 { background: linear-gradient(90deg, #b71c1c, #e53935); }
+
+    .rev {
+      grid-column: 4 / span 2;
+      grid-row: 3;
+      min-height: 0;
+      background: #c8e6c9;
+    }
+    .rev h2 { background: linear-gradient(90deg, #1b5e20, #2e7d32); }
+
+    .plans {
+      font-size: clamp(9.5pt, 1.2vw, 11.5pt);
+      line-height: 1.42;
+      margin: 0 10px 8px;
+      padding: 10px 12px;
+      background: linear-gradient(135deg, #fff8e1 0%, #ffecb3 100%);
+      border: 2px solid #ff8f00;
+      border-radius: 6px;
+      color: #3e2723;
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.8);
+    }
+    .plans strong { color: #e65100; }
+
+    footer {
+      margin-top: 10px;
+      font-size: clamp(9pt, 1.1vw, 10.5pt);
+      line-height: 1.4;
+      color: #37474f;
+      text-align: center;
+      padding: 8px 12px;
+      background: rgba(255, 255, 255, 0.85);
+      border-radius: 6px;
+      border: 1px solid #b0bec5;
+    }
+    @media print {
+      body {
+        print-color-adjust: exact;
+        -webkit-print-color-adjust: exact;
+        background: #fff;
+      }
+      .sheet { padding: 0; max-width: none; }
+      header { box-shadow: none; }
+      .bmc { box-shadow: none; }
+      /* Una sola página PDF: sin mínimos en vh que inflen el alto */
+      .cell { min-height: 0; }
+    }
+  </style>
+</head>
+<body>
+  <div class="sheet">
+    <header>
+      <h1>PROJECT_VIGIA</h1>
+      <p class="sub">Vigilancia inteligente · Plataforma SaaS de análisis de video con IA</p>
+      <div class="canvas-heading">
+        <p class="canvas-title">Modelo de Negocios Canvas</p>
+        <p class="canvas-subtitle">Versión 3 · Contenido alineado al <em>Plan de Negocios — Módulos Completos 2.0</em> (Fondo Emprender, 2026). Metodología Osterwalder &amp; Pigneur.</p>
+      </div>
+      <p class="authors"><strong>Equipo:</strong> Jhoan S. García Reyes · Juan José Rincón Méndez · <strong>UIS</strong> · <strong>Fondo Emprender</strong></p>
+    </header>
+
+    <div class="bmc">
+      <section class="cell kp">
+        <h2>Socios clave</h2>
+        <ul>
+          <li>Policía Nacional — cliente ancla estratégico y aliado institucional para adopción del sistema.</li>
+          <li>AWS / Google Cloud — infraestructura cloud, GPU y almacenamiento.</li>
+          <li>UIS — entorno del piloto; aliada académica en IA y seguridad.</li>
+          <li>Fondo Emprender – SENA — financiador capital semilla ($18M COP).</li>
+          <li>Integradores locales — canal indirecto (comisión 15%).</li>
+          <li>Hikvision / Dahua / Axis — fabricantes de cámaras IP compatibles ONVIF.</li>
+        </ul>
+      </section>
+
+      <section class="cell ka">
+        <h2>Actividades clave</h2>
+        <ul>
+          <li>Desarrollo y mantenimiento de la plataforma SaaS (Python, FastAPI, React, PostgreSQL).</li>
+          <li>Entrenamiento continuo del modelo YOLOv8 con datos del contexto colombiano.</li>
+          <li>Integración de cámaras IP vía ONVIF/RTSP con sistemas del cliente.</li>
+          <li>Ventas directas y <strong>demos gratuitas de 14 días</strong> (21 días Enterprise) a clientes piloto.</li>
+          <li>Soporte técnico y capacitación en uso del panel web.</li>
+          <li>Reportes mensuales de eventos y análisis de patrones de riesgo.</li>
+        </ul>
+      </section>
+
+      <section class="cell vp">
+        <h2>Propuesta de valor</h2>
+        <p class="plans"><strong>Planes (alineados al plan 2.0)</strong><br />
+        Básico $350.000/mes · hasta 4 cámaras · detección básica (robos, atracos) · alertas email · soporte correo (48h).<br />
+        Avanzado $950.000/mes · hasta 16 cámaras · detección avanzada + patrones · email + WhatsApp + panel · soporte prioritario (24h).<br />
+        Enterprise <strong>desde $2.500.000/mes por tramos de cámaras</strong> (17–50; 51–150; 151–300; 301+ cotización) — <em>no</em> precio fijo ilimitado; multicanal + integración · soporte dedicado.</p>
+        <ul>
+          <li>Detección automática en tiempo real de eventos delictivos (robos, atracos, riñas, agresiones) con IA (YOLOv8), acotada a <strong>eventos objetivos medibles</strong> (p. ej. armas visibles y patrones de agresión física); revisión humana de alertas.</li>
+          <li>Integración con cámaras existentes (ONVIF) — sin reemplazar infraestructura; 100% software, acceso por navegador.</li>
+          <li>Alertas inmediatas por panel web, email y WhatsApp (según plan), clasificadas por tipo y nivel de riesgo.</li>
+          <li>Análisis histórico de eventos y patrones por zona y horario.</li>
+          <li>Modelo SaaS flexible con tres planes; SLA 99,5% · soporte local en Bucaramanga.</li>
+          <li>Demo gratuita <strong>14 días</strong> para los primeros 5 clientes piloto barrio UIS (Enterprise: 21 días).</li>
+        </ul>
+      </section>
+
+      <section class="cell cr">
+        <h2>Relaciones con clientes</h2>
+        <ul>
+          <li>Onboarding asistido: configuración inicial + 1 sesión de capacitación virtual.</li>
+          <li>Soporte técnico por correo y WhatsApp en horario laboral (SLA 24–48h según plan).</li>
+          <li>Programa de referidos: 15% de descuento sobre el <strong>primer mes</strong> del cliente nuevo referido.</li>
+          <li>Actualizaciones automáticas incluidas en la suscripción mensual.</li>
+        </ul>
+      </section>
+
+      <section class="cell cs">
+        <h2>Segmentos de clientes</h2>
+        <ul>
+          <li><strong>Segmento 1 — Cliente directo:</strong> Policía Nacional y entidades de seguridad pública de Bucaramanga; optimizar vigilancia y tiempos de respuesta.</li>
+          <li><strong>Segmento 2 — Clientes secundarios:</strong> Conjuntos residenciales, comercios, instituciones educativas y empresas de seguridad privada con cámaras IP (mercado elegible estratos 3–6 con ONVIF y conectividad, según plan).</li>
+          <li><strong>Segmento 3 — Consumidor final:</strong> Comunidad (estudiantes, residentes, comerciantes); beneficiario indirecto; no paga el servicio.</li>
+          <li>Localización: Bucaramanga y área metropolitana; piloto barrio UIS.</li>
+        </ul>
+      </section>
+
+      <section class="cell kr">
+        <h2>Recursos clave</h2>
+        <ul>
+          <li>Equipo: 2 laptops i7/Ryzen7, 2 monitores, 4 cámaras IP demo (solo demostraciones).</li>
+          <li>Stack: Python 3.11, FastAPI, YOLOv8, React, PostgreSQL, Docker, AWS/GCP.</li>
+          <li>Cloud: GPU NVIDIA T4 (p. ej. g4dn.xlarge) para inferencia en tiempo real.</li>
+          <li>Capital humano: 2 fundadores full-time (CTO + CEO); <strong>Desarrollador Jr. desde mes 9</strong> (prestación de servicios).</li>
+          <li>Financiamiento: $23.200.000 COP (Fondo Emprender 77,6% + aportes propios 22,4%).</li>
+        </ul>
+      </section>
+
+      <section class="cell ch">
+        <h2>Canales</h2>
+        <ul>
+          <li>Venta directa: visitas presenciales a conjuntos, colegios y comercios barrio UIS.</li>
+          <li>Plataforma web con registro y suscripción en línea (PSE, transferencia, <strong>tarjeta crédito/débito</strong>).</li>
+          <li>LinkedIn y redes con contenido educativo sobre seguridad inteligente.</li>
+          <li>Canal indirecto: 2 integradores en Bucaramanga (comisión 15%).</li>
+          <li>Propuesta institucional a Secretaría de Seguridad de Bucaramanga.</li>
+          <li>Ferias de tecnología y seguridad en Bucaramanga (stand + demo en vivo).</li>
+        </ul>
+      </section>
+
+      <section class="cell cost">
+        <h2>Estructura de costos</h2>
+        <ul>
+          <li><strong>Inversión inicial — $23.200.000 COP</strong> (plan 6.6): equipos (2 portátiles + 2 monitores) $10.800.000; créditos cloud iniciales (6 meses) $3.600.000; gastos preoperativos y constitución $3.700.000; capital de trabajo líquido $5.100.000.</li>
+          <li><strong>Costos operativos año 1 — escenario subsistencia socios (2 SMMLV c/u + operación):</strong> total anual ≈ <strong>$179.976.000</strong> (plan 6.6), incluye cloud ≈$1.945.000/mes post-créditos, nómina socios subsistencia, marketing, coworking, herramientas, admin, imprevistos; meses 9–12 suman desarrollador Jr. (~$17,1M/mes).</li>
+          <li><strong>Referencia estructura objetivo (nómina mercado):</strong> costos totales año 1 ≈ $308.811.000 (plan 6.5) cuando los socios pasen a salario objetivo.</li>
+          <li>Margen bruto sobre suscripción estimado 65–70% después de costos directos del servicio (cloud, soporte, mantenimiento); margen neto año 1 negativo en fase de validación, acorde al plan.</li>
+        </ul>
+      </section>
+
+      <section class="cell rev">
+        <h2>Fuentes de ingresos</h2>
+        <ul>
+          <li><strong>Modelo:</strong> SaaS · suscripción mensual · PSE / transferencia / tarjeta · Enterprise: facturación a 30 días.</li>
+          <li><strong>Proyección año 1 (MRR acumulado):</strong> <strong>$56.150.000 COP</strong> (plan 5.3); ~10 clientes activos al cierre.</li>
+          <li><strong>Proyección año 2:</strong> ingreso total anual ≈ <strong>$195.300.000 COP</strong> (promedio entre cierre año 1 y 18 clientes; reemplaza cifra anterior ~$145M).</li>
+          <li>Detalle mensual por plan y años siguientes: modelo financiero adjunto al plan de negocios.</li>
+        </ul>
+      </section>
+    </div>
+
+    <footer>
+      Basado en Osterwalder &amp; Pigneur (2010), <em>Business Model Generation</em>.
+      CIIU principal 6201; complementarios 6202 y 6311. SaaS · Bucaramanga, Santander, Colombia.
+    </footer>
+  </div>
+</body>
+</html>

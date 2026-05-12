@@ -4,9 +4,12 @@ import Reveal from './Reveal';
 export default function WhatDefinesUs() {
   const stats = [
     { value: '99.5%', label: 'SLA de disponibilidad' },
-    { value: '24/7', label: 'Monitoreo continuo' },
+    { value: '24/7', label: 'Motor de IA analizando tus flujos de forma continua' },
     { value: '<2s', label: 'Tiempo de detección' },
-    { value: '+808', label: 'Cámaras en Bucaramanga' },
+    {
+      value: 'ONVIF',
+      label: 'Tus cámaras IP actuales: sin reemplazar infraestructura ni hardware de VIGIA',
+    },
   ];
 
   return (
@@ -35,14 +38,26 @@ export default function WhatDefinesUs() {
             </h2>
             <div className="w-24 h-1 bg-blue-400 mb-6"></div>
             <p className="text-lg text-slate-200 leading-relaxed mb-6">
-              Somos la primera plataforma SaaS de análisis inteligente de video con IA en
-              Bucaramanga, orientada al sector público y privado, sin requerir reemplazo de
-              infraestructura existente.
+              Somos una plataforma SaaS de análisis inteligente de video con IA en Bucaramanga,
+              pensada para <strong className="text-white font-semibold">múltiples segmentos</strong>
+              : fuerza pública y entidades territoriales, empresas y comercio, conjuntos
+              residenciales, instituciones educativas y la comunidad en general. No sustituimos tu
+              infraestructura: la potenciamos.
+            </p>
+            <p className="text-lg text-slate-200 leading-relaxed mb-6">
+              Integramos con <strong className="text-white font-semibold">tus</strong> cámaras IP
+              existentes mediante ONVIF/RTSP para detectar conductas de riesgo en tiempo real.
+              <strong className="text-white font-semibold"> No vendemos cámaras</strong> ni kits de
+              hardware: vendemos el software y el servicio de análisis y alertas.
             </p>
             <p className="text-lg text-slate-200 leading-relaxed mb-8">
-              Nuestra propuesta convierte la videovigilancia tradicional en una herramienta
-              inteligente de prevención, integrándose con cámaras existentes mediante el
-              estándar ONVIF para detectar comportamientos sospechosos en tiempo real.
+              El enfoque del producto prioriza{' '}
+              <strong className="text-white font-semibold">eventos objetivos</strong> (por ejemplo
+              presencia de armas y patrones de agresión física) con revisión humana de las alertas, y
+              operamos con un <strong className="text-white font-semibold">piloto en Bucaramanga</strong>{' '}
+              (entorno cercano a la UIS). Puedes validar el valor con una{' '}
+              <strong className="text-white font-semibold">demo gratuita de 14 días</strong> en planes
+              Básico y Avanzado sobre tus propias cámaras.
             </p>
             <a
               href="#contact"
@@ -69,10 +84,12 @@ export default function WhatDefinesUs() {
                 delay={((index + 1) as 1 | 2 | 3 | 4)}
                 className="bg-white/10 backdrop-blur-sm border border-white/20 rounded-lg p-8 text-center hover:bg-white/15 hover:-translate-y-1 transition-all duration-300"
               >
-                <p className="text-4xl sm:text-5xl font-bold text-white mb-2">
+                <p className="text-4xl sm:text-5xl font-bold text-white mb-2 tabular-nums">
                   {stat.value}
                 </p>
-                <p className="text-sm text-blue-200 uppercase tracking-wider">{stat.label}</p>
+                <p className="text-base text-blue-100 leading-snug normal-case tracking-normal">
+                  {stat.label}
+                </p>
               </Reveal>
             ))}
           </div>

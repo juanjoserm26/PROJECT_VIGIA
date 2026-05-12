@@ -8,6 +8,7 @@ export default function ContactForm() {
     email: '',
     phone: '',
     company: '',
+    organizationType: '',
     service: '',
     message: '',
     accepted: false,
@@ -34,6 +35,7 @@ export default function ContactForm() {
       email: '',
       phone: '',
       company: '',
+      organizationType: '',
       service: '',
       message: '',
       accepted: false,
@@ -51,9 +53,21 @@ export default function ContactForm() {
               Reservar una asesoría
             </h2>
             <div className="w-24 h-1 bg-blue-600 mb-6"></div>
-            <p className="text-lg text-slate-600 mb-8 leading-relaxed">
-              ¿Tienes alguna pregunta sobre nuestros servicios o deseas una cotización? Estamos
-              aquí para ayudar. Deja tus datos y nos pondremos en contacto.
+            <p className="text-lg text-slate-600 mb-4 leading-relaxed">
+              ¿Tienes preguntas o quieres una cotización? Atendemos a{' '}
+              <strong className="text-slate-800 font-semibold">
+                fuerza pública y municipios, empresas, comercio, conjuntos residenciales,
+                instituciones educativas, ONG y otros actores de la comunidad
+              </strong>
+              . No es un servicio exclusivo de un solo sector: la misma plataforma se adapta al
+              perfil de tu organización.
+            </p>
+            <p className="text-base text-slate-600 mb-8 leading-relaxed border-l-4 border-blue-600 pl-4">
+              <strong className="text-slate-800 font-semibold">Importante:</strong> integramos
+              software a las <strong className="text-slate-800 font-semibold">cámaras IP que ya tengas</strong>{' '}
+              (ONVIF/RTSP). PROJECT VIGIA{' '}
+              <strong className="text-slate-800 font-semibold">no vende cámaras ni equipos</strong>{' '}
+              de videovigilancia.
             </p>
 
             <div className="space-y-5">
@@ -81,7 +95,7 @@ export default function ContactForm() {
                 </div>
                 <div>
                   <h4 className="font-semibold text-slate-900 mb-1">Línea Única Nacional</h4>
-                  <p className="text-sm text-slate-600">+57 315 222 8982</p>
+                  <p className="text-sm text-slate-600">+57 315 050 2630</p>
                 </div>
               </div>
 
@@ -143,7 +157,7 @@ export default function ContactForm() {
               <input
                 type="text"
                 name="company"
-                placeholder="Empresa"
+                placeholder="Empresa, conjunto, entidad u organización"
                 value={form.company}
                 onChange={handleChange}
                 className="w-full px-4 py-3 bg-white border border-slate-300 rounded-md text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
@@ -151,12 +165,30 @@ export default function ContactForm() {
             </div>
 
             <select
+              name="organizationType"
+              value={form.organizationType}
+              onChange={handleChange}
+              required
+              className="w-full px-4 py-3 bg-white border border-slate-300 rounded-md text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            >
+              <option value="">Tipo de organización que representa</option>
+              <option value="public-security">Fuerza pública / seguridad del Estado</option>
+              <option value="municipal">Alcaldía u otra entidad territorial</option>
+              <option value="enterprise">Empresa o industria</option>
+              <option value="retail">Comercio (tienda, centro comercial, cadena)</option>
+              <option value="residential">Conjunto residencial o propiedad horizontal</option>
+              <option value="education">Institución educativa</option>
+              <option value="ngo">ONG, fundación o asociación comunitaria</option>
+              <option value="other">Otro perfil</option>
+            </select>
+
+            <select
               name="service"
               value={form.service}
               onChange={handleChange}
               className="w-full px-4 py-3 bg-white border border-slate-300 rounded-md text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
             >
-              <option value="">Servicio de su interés</option>
+              <option value="">¿Qué te gustaría saber?</option>
               <option value="vigilancia">Vigilancia con IA</option>
               <option value="monitoreo">Monitoreo en tiempo real</option>
               <option value="analitica">Analítica avanzada</option>
@@ -166,7 +198,7 @@ export default function ContactForm() {
 
             <textarea
               name="message"
-              placeholder="¿Cómo podemos ayudarte?"
+              placeholder="Cuéntanos cuántas cámaras IP aproximadas quieres integrar y cualquier detalle útil (no vendemos equipos; solo conectamos a las tuyas)."
               value={form.message}
               onChange={handleChange}
               rows={4}

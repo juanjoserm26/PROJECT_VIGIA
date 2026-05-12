@@ -36,7 +36,7 @@ export default function Certifications() {
       code: 'ONVIF Profile S/T',
       title: 'Interoperabilidad',
       description:
-        'Compatibilidad certificada con el estándar abierto de la industria para integración con cámaras IP de cualquier fabricante.',
+        'Compatibilidad con el estándar abierto ONVIF para integrar el análisis con las cámaras IP que ya posee cada cliente (no comercializamos cámaras).',
     },
     {
       code: 'AWS Partner',
@@ -62,8 +62,9 @@ export default function Certifications() {
           </h2>
           <div className="w-24 h-1 bg-blue-600 mx-auto mb-6"></div>
           <p className="text-lg text-slate-600 max-w-3xl mx-auto">
-            Cumplimos los más altos estándares internacionales de seguridad, calidad y
-            responsabilidad social para garantizar la confianza de nuestros clientes.
+            Marco de confianza para clientes del <strong className="text-slate-800 font-semibold">sector público y privado</strong>, desde
+            municipios y fuerza pública hasta empresas, conjuntos y educación. Los sellos refieren
+            a nuestro servicio SaaS y tratamiento de datos, no a la venta de hardware de video.
           </p>
         </div>
 

@@ -1,0 +1,37 @@
+Para que export_annotated_video.py funcione SIN abrir ventanas de OpenCV en cada
+foto del vídeo, detector.py debe permitir:
+
+  analyze_frame(frame, show_preview=False)
+
+y debe existir:
+
+  reset_tracker_state()
+
+Si tu prototipo V3 todavía tiene solo "def analyze_frame(frame):":
+
+1) Al final de las variables globales (pose_history, etc.) añade:
+
+   def reset_tracker_state():
+       global pose_history, last_alert_time, last_face_center, hit_window_buffer
+       pose_history = []
+       last_alert_time = 0.0
+       last_face_center = None
+       hit_window_buffer = []
+
+   (Ajusta los nombres si en tu archivo se llaman distinto.)
+
+2) Cambia la firma a:
+
+   def analyze_frame(frame, show_preview=True):
+
+3) Donde esté cv2.imshow(...) y waitKey, envuélvelo en:
+
+   if show_preview:
+       cv2.imshow(...)
+       ...
+
+4) El texto "Presiona Q para cerrar" solo si show_preview es True; si no,
+   opcional: una línea "PROJECT VIGIA · IA".
+
+Si no quieres tocar detector.py: puedes grabar la PANTALLA mientras corres main.py
+(OBS / Win+G) y usar ese MP4 en public/demostracion/ sin export automático.

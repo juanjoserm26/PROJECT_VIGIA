@@ -1,32 +1,42 @@
 import Link from 'next/link';
 import Image from 'next/image';
 import Reveal from './Reveal';
+import type { ServiceSlug } from '@/lib/services-content';
 
 export default function Features() {
-  const services = [
+  const services: {
+    slug: ServiceSlug;
+    image: string;
+    title: string;
+    description: string;
+  }[] = [
     {
+      slug: 'vigilancia-con-ia',
       image: '/images/vigia-service-ai.jpg',
       title: 'Vigilancia con IA',
       description:
-        'Detección automática en tiempo real de robos, atracos, riñas y comportamientos sospechosos con tecnología YOLOv8.',
+        'Detección automática en tiempo real de robos, atracos, riñas y agresiones físicas con YOLOv8 sobre el video que ya capturan tus cámaras (criterios objetivos documentados).',
     },
     {
+      slug: 'monitoreo-en-tiempo-real',
       image: '/images/vigia-service-monitoring.jpg',
       title: 'Monitoreo en tiempo real',
       description:
-        'Acceso instantáneo a múltiples flujos de video. Panel centralizado para supervisar cámaras IP existentes mediante ONVIF.',
+        'Panel web para visualizar flujos y gestionar alertas; integración ONVIF/RTSP con tus cámaras IP existentes sin software adicional en tu PC.',
     },
     {
+      slug: 'analitica-avanzada',
       image: '/images/vigia-service-analytics.jpg',
       title: 'Analítica avanzada',
       description:
-        'Análisis histórico de eventos, patrones de riesgo por zona y horario. Reportes ejecutivos para toma de decisiones.',
+        'Eventos almacenados en base de datos para consulta histórica, patrones de riesgo por zona y horario, y reportes ejecutivos.',
     },
     {
+      slug: 'innovacion',
       image: '/images/vigia-service-innovation.jpg',
       title: 'Innovación',
       description:
-        'Plataforma SaaS 100% software. Sin reemplazar tu infraestructura. Aprovecha tus cámaras IP Hikvision, Dahua o Axis.',
+        'Suscripción SaaS (sin licencias perpetuas obligatorias): IA sobre tus cámaras IP ONVIF sin proyecto masivo de renovación de CCTV.',
     },
   ];
 
@@ -40,9 +50,13 @@ export default function Features() {
           </h2>
           <div className="w-24 h-1 bg-blue-600 mx-auto mb-6"></div>
           <p className="text-lg text-slate-600 max-w-3xl mx-auto leading-relaxed">
-            En PROJECT VIGIA estamos comprometidos con la vigilancia inteligente, basados en la
-            gestión del riesgo, con el apoyo de procesos innovadores y tecnológicos que nos
-            permiten brindar soluciones para promover entornos seguros y tranquilos.
+            Ofrecemos vigilancia inteligente como servicio en la nube para{' '}
+            <strong className="text-slate-800 font-semibold">
+              sector público, empresas, comercio, conjuntos residenciales, educación y comunidad
+            </strong>
+            . La propuesta es la misma: analizar el video de{' '}
+            <strong className="text-slate-800 font-semibold">tus</strong> cámaras ya instaladas —
+            PROJECT VIGIA no comercializa cámaras ni equipos de videovigilancia.
           </p>
         </Reveal>
 
@@ -73,7 +87,7 @@ export default function Features() {
                   {service.description}
                 </p>
                 <Link
-                  href="#what-defines-us"
+                  href={`/servicios/${service.slug}`}
                   className="inline-flex items-center gap-1 text-blue-600 hover:text-blue-700 font-semibold text-sm group/link"
                 >
                   Ver servicio
