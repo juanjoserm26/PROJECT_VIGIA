@@ -13,8 +13,29 @@
 }
 
 html {
+  /* Base estable: diseño actual en portátiles y tablets (16px = escala rem de Tailwind) */
+  font-size: 16px;
   scroll-behavior: smooth;
   scroll-padding-top: 8rem;
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+}
+
+/*
+ * Pantallas anchas (TV aula, 4K, proyector): escala proporcional del escenario
+ * sin zoom manual del navegador. Solo sube el rem global; no toca componentes.
+ * Por debajo de 1800px el tamaño sigue siendo 16px (como en tu PC, foto 1).
+ */
+@media (min-width: 1800px) {
+  html {
+    font-size: clamp(16px, 6px + 0.62vw, 22.5px);
+  }
+}
+
+@media (min-width: 2400px) {
+  html {
+    font-size: clamp(17px, 2px + 0.78vw, 24px);
+  }
 }
 
 body {

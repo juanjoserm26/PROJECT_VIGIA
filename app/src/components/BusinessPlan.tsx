@@ -3,7 +3,7 @@ import { readFile } from 'fs/promises';
 import path from 'path';
 
 async function getCanvasImageMeta(): Promise<{ width: number; height: number }> {
-  const fallback = { width: 4000, height: 2800 };
+  const fallback = { width: 2526, height: 1786 };
   try {
     const raw = await readFile(
       path.join(process.cwd(), 'public', 'canvas-v3-image-meta.json'),
@@ -14,13 +14,17 @@ async function getCanvasImageMeta(): Promise<{ width: number; height: number }> 
       return { width: m.width, height: m.height };
     }
   } catch {
-    /* sin meta hasta ejecutar npm run generate:canvas-pdf */
+    /* sin meta */
   }
   return fallback;
 }
 
+const CANVAS_ASSET_VERSION = 'img-v3-html-readable-20260516';
+
 export default async function BusinessPlan() {
   const { width: imgWidth, height: imgHeight } = await getCanvasImageMeta();
+  const pngSrc = `/PROJECT_VIGIA_Canvas_v3.png?v=${CANVAS_ASSET_VERSION}`;
+  const pdfHref = `/PROJECT_VIGIA_Canvas_v3.pdf?v=${CANVAS_ASSET_VERSION}`;
 
   return (
     <section id="business-plan" className="py-20 sm:py-24 bg-white">
@@ -40,27 +44,28 @@ export default async function BusinessPlan() {
           cámaras ni kits de hardware.
         </p>
         <p className="text-sm text-slate-500 mt-3 max-w-2xl mx-auto">
-          Hacé clic en la imagen para abrirla en tamaño completo y ampliar el detalle. El PDF se
-          descarga desde el botón inferior.
+          Hacé clic en la imagen para ampliarla. El archivo PDF completo se descarga con el botón
+          inferior.
         </p>
       </div>
 
       <div className="w-full px-2 sm:px-4 lg:px-6">
-        <figure className="mx-auto w-full max-w-[min(100vw-1rem,1920px)] rounded-xl overflow-hidden border border-slate-200 shadow-xl bg-slate-50">
+        <figure className="mx-auto w-full max-w-[min(100vw-1rem,1920px)] overflow-hidden rounded-xl border border-slate-200 bg-slate-100 shadow-xl">
           <a
-            href="/PROJECT_VIGIA_Canvas_v3.png"
+            href={pngSrc}
             target="_blank"
             rel="noopener noreferrer"
             className="block focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2"
             title="Abrir imagen en tamaño completo"
           >
             <Image
-              src="/PROJECT_VIGIA_Canvas_v3.png"
+              src={pngSrc}
               alt="Modelo de Negocios Canvas PROJECT VIGIA — versión 3"
               width={imgWidth}
               height={imgHeight}
-              className="block w-full h-auto align-middle"
+              className="block h-auto w-full align-middle"
               priority
+              unoptimized
               sizes="(min-width: 1920px) 1904px, (min-width: 1280px) 95vw, (min-width: 768px) 96vw, 100vw"
             />
           </a>
@@ -73,7 +78,7 @@ export default async function BusinessPlan() {
           Emprender &middot; 2026
         </p>
         <a
-          href="/PROJECT_VIGIA_Canvas_v3.pdf"
+          href={pdfHref}
           download="PROJECT_VIGIA_Canvas_v3.pdf"
           className="inline-flex items-center gap-2 bg-blue-600 text-white px-5 py-2.5 rounded-lg font-semibold hover:bg-blue-700 transition shadow"
         >

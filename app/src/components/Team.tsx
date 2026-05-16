@@ -22,12 +22,11 @@ export default function Team() {
   return (
     <section id="team" className="py-20 sm:py-24 bg-white">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        {/* Section Header */}
         <div className="text-center mb-16">
           <h2 className="text-4xl sm:text-5xl font-bold text-slate-900 mb-3">
             Conoce al equipo
           </h2>
-          <div className="w-24 h-1 bg-blue-600 mx-auto mb-6"></div>
+          <div className="w-24 h-1 bg-blue-600 mx-auto mb-6" />
           <p className="text-lg text-slate-600 max-w-3xl mx-auto">
             Dos estudiantes de Ingeniería de Sistemas de la UIS desarrollando una plataforma SaaS
             para <strong className="text-slate-800 font-semibold">varios sectores</strong>: desde
@@ -36,55 +35,71 @@ export default function Team() {
           </p>
         </div>
 
-        <div className="grid lg:grid-cols-2 gap-10 items-center">
-          {/* Team photo */}
-          <Reveal variant="zoom" className="relative aspect-video w-full overflow-hidden rounded-xl shadow-2xl">
-            <Image
-              src="/images/vigia-team.png"
-              alt="Juan José Rincón y Jhoan Sebastián García — equipo PROJECT VIGIA"
-              fill
-              className="object-cover object-center"
-              sizes="(max-width: 1024px) 100vw, 50vw"
-              priority
-            />
+        <div className="flex flex-col gap-8 lg:flex-row lg:items-stretch lg:gap-x-10">
+          <Reveal variant="zoom" className="flex min-h-[280px] w-full lg:min-h-0 lg:w-1/2">
+            <div className="flex w-full items-stretch gap-3 sm:gap-4">
+              <div
+                className="hidden w-1 shrink-0 self-stretch rounded-full bg-blue-600 sm:block"
+                aria-hidden
+              />
+              <div className="relative min-h-[280px] flex-1 overflow-hidden rounded-2xl bg-slate-100 p-2 shadow-2xl ring-1 ring-slate-200/80 sm:p-3 lg:h-full lg:min-h-0">
+                <Image
+                  src="/images/vigia-team.png"
+                  alt="Juan José Rincón y Jhoan Sebastián García — equipo PROJECT VIGIA"
+                  fill
+                  className="rounded-xl object-cover object-[center_28%]"
+                  quality={100}
+                  sizes="(max-width: 1024px) 100vw, 50vw"
+                  priority
+                />
+              </div>
+            </div>
           </Reveal>
 
-          {/* Members list */}
-          <div className="space-y-8">
-            {members.map((member, index) => (
-              <Reveal
-                key={index}
-                variant="slide"
-                delay={((index + 1) as 1 | 2)}
-                className="bg-slate-50 border-l-4 border-blue-600 rounded-r-lg p-6 hover:shadow-lg hover:-translate-y-0.5 transition-all duration-300"
-              >
-                <h3 className="text-xl font-bold text-slate-900 mb-1">{member.name}</h3>
-                <p className="text-blue-700 font-semibold text-sm mb-3">{member.role}</p>
-                <p className="text-slate-600 text-sm leading-relaxed mb-4">
-                  {member.description}
-                </p>
-                <div className="flex flex-wrap gap-2">
-                  {member.skills.map((skill) => (
-                    <span
-                      key={skill}
-                      className="text-xs bg-white border border-slate-200 text-slate-700 px-3 py-1 rounded-full"
-                    >
-                      {skill}
-                    </span>
-                  ))}
-                </div>
-              </Reveal>
-            ))}
-
-            <Reveal delay={3} className="bg-blue-50 border border-blue-200 rounded-lg p-5 text-sm text-slate-700">
-              <p className="font-semibold mb-1">📍 Universidad Industrial de Santander</p>
-              <p>
-                PROJECT VIGIA es respaldado por el Fondo Emprender del SENA y desarrollado en
-                el ecosistema de innovación de la UIS en Bucaramanga.
-              </p>
-            </Reveal>
+          <div className="flex w-full gap-3 sm:gap-4 lg:w-1/2">
+            <div
+              className="hidden w-1 shrink-0 self-stretch rounded-full bg-blue-600 sm:block"
+              aria-hidden
+            />
+            <div className="flex flex-1 flex-col gap-8">
+              {members.map((member, index) => (
+                <Reveal
+                  key={index}
+                  variant="slide"
+                  delay={((index + 1) as 1 | 2)}
+                  className="bg-slate-50 border-l-4 border-blue-600 rounded-r-lg p-6 hover:shadow-lg hover:-translate-y-0.5 transition-all duration-300"
+                >
+                  <h3 className="text-xl font-bold text-slate-900 mb-1">{member.name}</h3>
+                  <p className="text-blue-700 font-semibold text-sm mb-3">{member.role}</p>
+                  <p className="text-slate-600 text-sm leading-relaxed mb-4">
+                    {member.description}
+                  </p>
+                  <div className="flex flex-wrap gap-2">
+                    {member.skills.map((skill) => (
+                      <span
+                        key={skill}
+                        className="text-xs bg-white border border-slate-200 text-slate-700 px-3 py-1 rounded-full"
+                      >
+                        {skill}
+                      </span>
+                    ))}
+                  </div>
+                </Reveal>
+              ))}
+            </div>
           </div>
         </div>
+
+        <Reveal
+          delay={3}
+          className="mt-8 bg-blue-50 border border-blue-200 rounded-lg p-5 text-sm text-slate-700"
+        >
+          <p className="font-semibold mb-1">📍 Universidad Industrial de Santander</p>
+          <p>
+            PROJECT VIGIA es respaldado por el Fondo Emprender del SENA y desarrollado en el
+            ecosistema de innovación de la UIS en Bucaramanga.
+          </p>
+        </Reveal>
       </div>
     </section>
   );

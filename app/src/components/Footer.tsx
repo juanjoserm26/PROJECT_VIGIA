@@ -129,7 +129,7 @@ export default function Footer() {
               </li>
               <li className="pt-2">
                 <Link
-                  href="#contact"
+                  href="/asesoria"
                   className="inline-block px-5 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-md font-semibold text-sm transition"
                 >
                   Solicitar asesoría

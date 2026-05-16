@@ -1,10 +1,12 @@
 'use client';
 
 import { useSearchParams, useRouter } from 'next/navigation';
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import QRCode from '@/components/QRCode';
+import PlanPurchaseAuthGate from '@/components/PlanPurchaseAuthGate';
+import { getDemoSession } from '@/lib/demo-session';
 import {
   checkoutSummaryFeatures,
   getMarketingPlan,
@@ -36,6 +38,12 @@ export default function CheckoutClient() {
   const [paymentState, setPaymentState] = useState<PaymentState>({
     step: 'form',
   });
+
+  const [checkoutAllowed, setCheckoutAllowed] = useState<boolean | undefined>(undefined);
+
+  useEffect(() => {
+    setCheckoutAllowed(getDemoSession() !== null);
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -80,6 +88,31 @@ export default function CheckoutClient() {
       });
     }
   };
+
+  if (checkoutAllowed === undefined) {
+    return (
+      <div className="flex flex-col min-h-screen">
+        <Header />
+        <main className="flex flex-1 items-center justify-center bg-slate-50 py-24">
+          <p className="text-sm text-slate-500">Cargando checkout…</p>
+        </main>
+        <Footer />
+      </div>
+    );
+  }
+
+  if (!checkoutAllowed) {
+    const checkoutReturnPath = `/checkout?plan=${planSlug}`;
+    return (
+      <div className="flex min-h-screen flex-col">
+        <Header />
+        <main className="flex flex-1 flex-col items-center justify-center bg-slate-50 px-4 py-16">
+          <PlanPurchaseAuthGate variant="panel" checkoutReturnPath={checkoutReturnPath} />
+        </main>
+        <Footer />
+      </div>
+    );
+  }
 
   return (
     <div className="flex flex-col min-h-screen">

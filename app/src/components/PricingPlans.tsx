@@ -1,10 +1,34 @@
-import Link from 'next/link';
+'use client';
+
+import { useRouter } from 'next/navigation';
+import { useState } from 'react';
 import Reveal from './Reveal';
+import PlanPurchaseAuthGate from '@/components/PlanPurchaseAuthGate';
+import { getDemoSession } from '@/lib/demo-session';
 import { marketingPlans } from '@/lib/subscription-plans';
 
 export default function PricingPlans() {
+  const router = useRouter();
+  const [authGatePath, setAuthGatePath] = useState<string | null>(null);
+
+  function goToCheckout(planSlug: string) {
+    const path = `/checkout?plan=${planSlug}`;
+    if (!getDemoSession()) {
+      setAuthGatePath(path);
+      return;
+    }
+    router.push(path);
+  }
+
   return (
     <section id="pricing" className="py-20 sm:py-24 bg-slate-50">
+      {authGatePath ? (
+        <PlanPurchaseAuthGate
+          variant="modal"
+          checkoutReturnPath={authGatePath}
+          onDismiss={() => setAuthGatePath(null)}
+        />
+      ) : null}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Section Header */}
         <Reveal className="text-center mb-16">
@@ -86,8 +110,9 @@ export default function PricingPlans() {
                 </div>
 
                 {/* CTA Button */}
-                <Link
-                  href={`/checkout?plan=${plan.slug}`}
+                <button
+                  type="button"
+                  onClick={() => goToCheckout(plan.slug)}
                   className={`w-full block text-center py-3 px-4 rounded-md font-semibold transition-all mb-8 ${
                     plan.highlighted
                       ? 'bg-blue-600 text-white hover:bg-blue-700 shadow-lg'
@@ -95,7 +120,7 @@ export default function PricingPlans() {
                   }`}
                 >
                   Solicitar plan
-                </Link>
+                </button>
 
                 {/* Features List */}
                 <ul className="space-y-3">

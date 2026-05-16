@@ -126,7 +126,7 @@ export default async function BlogArticlePage({ params }: Props) {
                 Ver planes y precios
               </Link>
               <Link
-                href="/#contact"
+                href="/asesoria"
                 className="inline-flex justify-center rounded-lg border-2 border-slate-300 bg-white px-6 py-3 text-sm font-semibold text-slate-800 hover:bg-slate-50 transition"
               >
                 Solicitar asesoría

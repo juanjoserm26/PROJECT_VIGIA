@@ -101,7 +101,7 @@ export default async function ServicioPage({ params }: Props) {
             Ver planes y precios
           </Link>
           <Link
-            href="/#contact"
+            href="/asesoria"
             className="inline-flex justify-center px-6 py-3 rounded-lg border-2 border-slate-300 text-slate-800 font-semibold hover:bg-slate-50 transition text-center"
           >
             Solicitar asesoría
