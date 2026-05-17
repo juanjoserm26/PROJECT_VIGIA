@@ -44,6 +44,45 @@ function SectionBlock({ section }: { section: BlogSection }) {
           ))}
         </ul>
       );
+    case 'image':
+      return (
+        <figure className="my-10">
+          <div className="relative overflow-hidden rounded-xl border border-slate-200 bg-slate-50 aspect-[16/10] sm:aspect-[16/9]">
+            <Image
+              src={section.src}
+              alt={section.alt}
+              fill
+              className="object-contain p-2"
+              sizes="(max-width: 768px) 100vw, 720px"
+            />
+          </div>
+          {section.caption ? (
+            <figcaption className="mt-3 text-center text-sm text-slate-500 leading-relaxed">
+              {section.caption}
+            </figcaption>
+          ) : null}
+        </figure>
+      );
+    case 'links':
+      return (
+        <div className="mt-10 mb-8 rounded-xl border border-slate-200 bg-slate-50/80 p-6 sm:p-8">
+          <h3 className="text-lg font-bold text-slate-900 mb-4">{section.title}</h3>
+          <ul className="space-y-3">
+            {section.items.map((item) => (
+              <li key={item.href}>
+                <a
+                  href={item.href}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-blue-600 hover:text-blue-800 font-medium underline-offset-2 hover:underline"
+                >
+                  {item.label}
+                </a>
+              </li>
+            ))}
+          </ul>
+        </div>
+      );
     default:
       return null;
   }

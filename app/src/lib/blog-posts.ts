@@ -5,7 +5,9 @@
 export type BlogSection =
   | { type: 'paragraph'; text: string }
   | { type: 'heading'; text: string }
-  | { type: 'list'; items: string[] };
+  | { type: 'list'; items: string[] }
+  | { type: 'image'; src: string; alt: string; caption?: string }
+  | { type: 'links'; title: string; items: { label: string; href: string }[] };
 
 export interface BlogPost {
   slug: string;
@@ -65,36 +67,147 @@ export const blogPosts: BlogPost[] = [
     title: 'Integración ONVIF: aprovecha tus cámaras IP existentes',
     date: '8 de abril de 2026',
     excerpt:
-      'Conecta marcas como Hikvision, Dahua o Axis vía ONVIF sin cambiar tus equipos: solo agregamos la capa de software en la nube.',
+      '¿Sirve cualquier cámara? No. Te explicamos IP vs analógica, ONVIF, requisitos y cómo PROJECT VIGIA se conecta sin vender hardware.',
     image: '/images/vigia-blog-cameras.jpg',
-    readTime: '5 min',
+    readTime: '12 min',
     sections: [
       {
         type: 'paragraph',
         text:
-          'Gran parte de las instalaciones en comercios, conjuntos y sedes institucionales ya cuenta con cámaras IP compatibles con el estándar ONVIF y transmisión RTSP. Esa infraestructura es el punto de partida de PROJECT VIGIA: no necesitas un proyecto de renovación masiva para empezar a analizar video de forma inteligente.',
+          'Muchos clientes preguntan lo mismo antes de contratar: «¿cualquier cámara de vigilancia sirve?». La respuesta corta es no. PROJECT VIGIA es software en la nube: analizamos el video de cámaras que ya tienes, si cumplen requisitos técnicos. No vendemos ni instalamos equipos; sumamos inteligencia artificial sobre tu infraestructura existente.',
       },
       {
         type: 'heading',
-        text: 'Por qué ONVIF importa',
+        text: '¿Sirve cualquier cámara de vigilancia?',
       },
       {
         type: 'paragraph',
         text:
-          'ONVIF define perfiles comunes para descubrimiento, streaming y metadatos entre fabricantes. Para el cliente significa menos vendor lock-in en la capa de captura: puedes mantener Dahua en acceso, Hikvision en patio y otra marca en ascensores, y aun así converger el análisis en una sola plataforma SaaS.',
+          'No es «cualquier» cámara. Hacen falta dispositivos con tecnología de red y, preferiblemente, el estándar abierto ONVIF. Las cámaras analógicas antiguas (cable coaxial hacia un DVR) no se integran directamente con nuestra plataforma: necesitan migración previa a IP.',
+      },
+      {
+        type: 'heading',
+        text: 'Cámaras cerradas vs cámaras ONVIF (abiertas)',
+      },
+      {
+        type: 'paragraph',
+        text:
+          'Las cámaras «cerradas» solo hablan el idioma de su fabricante: una marca X suele funcionar pleno con grabador X. Las cámaras con ONVIF llevan firmware alineado a un protocolo global: actúan como traductor entre marcas. Así puedes tener Hikvision en acceso, Dahua en patio y otra marca en ascensores, y aun así centralizar el análisis en un solo servicio SaaS.',
       },
       {
         type: 'list',
         items: [
-          'Menor CAPEX inicial al no exigir cambiar DVR ni cableado solo por nuestra integración.',
-          'Tiempo de onboarding enfocado en credenciales de red y políticas de retención, no en obra civil.',
+          'Cerradas: ecosistema propietario, menos flexibilidad al cambiar de proveedor de software.',
+          'ONVIF: interoperabilidad entre fabricantes (Hikvision, Dahua, Axis y otros certificados).',
+          'PROJECT VIGIA se conecta por ONVIF/RTSP a la capa de captura; tú conservas la propiedad del hardware.',
+        ],
+      },
+      {
+        type: 'heading',
+        text: 'IP vs analógica: ¿cuál necesitas?',
+      },
+      {
+        type: 'paragraph',
+        text:
+          'Un sistema IP envía video digital por red (Ethernet o Wi‑Fi) hacia un NVR o la nube; permite mayor resolución, acceso remoto y escalado. Las analógicas usan señal por cable coaxial hacia un DVR: son más simples y baratas al inicio, pero limitan calidad, analítica avanzada e integración con plataformas modernas como la nuestra.',
+      },
+      {
+        type: 'image',
+        src: '/images/blog/camara-red-vs-analogica.png',
+        alt: 'Comparación entre cámara de red IP con NVR y app móvil frente a cámara analógica con DVR y monitor coaxial',
+        caption:
+          'Esquema comparativo: cámara de red (IP) con NVR y acceso móvil frente a cámara analógica con DVR y monitor local.',
+      },
+      {
+        type: 'image',
+        src: '/images/blog/ip-vs-analogica-comparativa.png',
+        alt: 'Infografía que contrasta ventajas de cámaras IP frente a cámaras analógicas',
+        caption:
+          'Las cámaras IP suelen ofrecer mejor definición, cableado de red (PoE), analítica y escalabilidad frente al coaxial analógico.',
+      },
+      {
+        type: 'heading',
+        text: 'Requisitos para que tu cámara sea compatible',
+      },
+      {
+        type: 'list',
+        items: [
+          'Debe ser cámara IP: digital, conectada por red (Ethernet/PoE o Wi‑Fi estable). Las analógicas puras no aplican.',
+          'Certificación ONVIF del fabricante (perfiles S/T según funciones de streaming y metadatos).',
+          'Conectividad mínima ~10 Mbps por cámara activa y acceso a la URL RTSP/ONVIF en tu red.',
+          'Marcas habituales en Colombia: Hikvision, Dahua, Axis y equivalentes compatibles ONVIF.',
+        ],
+      },
+      {
+        type: 'heading',
+        text: 'Cómo encaja tu instalación actual',
+      },
+      {
+        type: 'paragraph',
+        text:
+          'En la mayoría de sitios las cámaras IP se conectan a un NVR o switch PoE en red local; desde ahí PROJECT VIGIA toma el flujo para procesarlo con IA en la nube. No reemplazamos tu grabador ni tus pantallas de guardia: añadimos detección objetiva, alertas y panel web.',
+      },
+      {
+        type: 'image',
+        src: '/images/blog/onvif-poe-sistema.png',
+        alt: 'Diagrama de cámaras PoE IP conectadas a NVR, monitor, router y dispositivos móviles',
+        caption:
+          'Ejemplo de arquitectura IP: cámaras PoE, NVR/grabador en red y visualización local o remota.',
+      },
+      {
+        type: 'image',
+        src: '/images/blog/onvif-nvr-marcas.png',
+        alt: 'Diagrama de conexión de cámaras IP a NVR con logos de marcas compatibles ONVIF',
+        caption:
+          'ONVIF permite combinar marcas distintas en un mismo ecosistema de videovigilancia.',
+      },
+      {
+        type: 'heading',
+        text: 'Por qué ONVIF importa para PROJECT VIGIA',
+      },
+      {
+        type: 'paragraph',
+        text:
+          'ONVIF estandariza descubrimiento, streaming y metadatos entre fabricantes. Para ti significa menor vendor lock-in en captura y onboarding centrado en credenciales de red y políticas de retención, no en obra civil ni cambio masivo de CCTV.',
+      },
+      {
+        type: 'list',
+        items: [
+          'Menor inversión inicial: no exigimos cambiar DVR ni cableado solo por integrarnos.',
           'Escalado por número de flujos según tu plan de suscripción mensual.',
+          'Soporte técnico en conexión de fuentes, prueba de latencia y capacitación en el panel web.',
         ],
       },
       {
         type: 'paragraph',
         text:
-          'Nuestro equipo técnico apoya la configuración inicial documentada en el proceso comercial: conexión de fuentes, prueba de latencia y capacitación breve en el panel web.',
+          'Si aún no tienes cámaras IP ONVIF, te orientamos en la selección; la compra e instalación física siguen siendo responsabilidad del cliente o de su integrador de seguridad. Nosotros entregamos el análisis inteligente y la operación del servicio.',
+      },
+      {
+        type: 'links',
+        title: 'Referencias y lectura complementaria',
+        items: [
+          {
+            label: '¿Qué son las cámaras IP ONVIF? — Jer-Tech',
+            href: 'https://jer-tech.com/es/que-son-las-camaras-ip-onvif/',
+          },
+          {
+            label: 'Sistema de cámaras IP vs tradicionales — Bokysee',
+            href: 'https://bokysee.com/es/ip-camera-system-vs-traditional-cameras/',
+          },
+          {
+            label: 'Cámaras IP vs analógicas — CCTV Barato',
+            href: 'https://www.cctvbarato.com/es/blog/camaras-de-seguridad-y-videovigilancia/diferencias-entre-camaras-de-vigilancia-ip-wifi-y-analogicas-instalacion-y-ventajas',
+          },
+          {
+            label: 'Cámaras IP vs analógicas (artículo LinkedIn / Hexacorp)',
+            href: 'https://es.linkedin.com/pulse/c%C3%A1maras-ip-vs-anal%C3%B3gicas-cu%C3%A1l-es-la-mejor-opci%C3%B3n-para-aupoc',
+          },
+          {
+            label: 'Sitio oficial ONVIF',
+            href: 'https://www.onvif.org/',
+          },
+        ],
       },
     ],
   },
