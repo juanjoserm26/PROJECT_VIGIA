@@ -1,17 +1,19 @@
 ﻿'use client';
 
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import PasswordField, { authInputClass } from '@/components/PasswordField';
 import {
-  authenticateUser,
-  findUserByEmail,
+  authenticateUserAsync,
+  cacheUserFromPublic,
+  findUserByEmailAsync,
   getGoogleRememberedEmail,
   isGoogleTrustedOnDevice,
   setGoogleRememberedEmail,
   setGoogleTrustedOnDevice,
+  type PublicStoredUser,
+  type StoredUser,
 } from '@/lib/user-store';
 import { clientLabelFromProfile, type DemoSession } from '@/lib/demo-session';
-import type { StoredUser } from '@/lib/user-store';
 
 type GoogleSignInPanelProps = {
   onSuccess: (session: DemoSession) => void;
@@ -92,14 +94,16 @@ export default function GoogleSignInPanel({ onSuccess, onCancel, compact }: Goog
   const googleClientId = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID?.trim() ?? '';
   const oauthConfigured = Boolean(googleClientId);
 
-  const [showForm, setShowForm] = useState(false);
+  const [showVigiaForm, setShowVigiaForm] = useState(false);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [bannerError, setBannerError] = useState<string | null>(null);
+  const [bannerSuccess, setBannerSuccess] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
   const [remembered, setRemembered] = useState<string | null>(null);
   const [trusted, setTrusted] = useState(false);
+  const quickLoginTried = useRef(false);
 
   useEffect(() => {
     setRemembered(getGoogleRememberedEmail());
@@ -107,34 +111,47 @@ export default function GoogleSignInPanel({ onSuccess, onCancel, compact }: Goog
   }, []);
 
   const loginWithUser = useCallback(
-    (user: StoredUser) => {
+    (user: StoredUser, freshAccount = false) => {
       setGoogleRememberedEmail(user.email);
       setGoogleTrustedOnDevice(true);
       setBannerError(null);
       setError(null);
-      onSuccess(sessionFromUser(user, false));
+      onSuccess(sessionFromUser(user, freshAccount));
     },
     [onSuccess],
   );
 
-  function tryQuickLogin(): boolean {
+  const completeGoogleAuth = useCallback(
+    (publicUser: PublicStoredUser, message?: string) => {
+      const user = cacheUserFromPublic(publicUser, '');
+      if (message) setBannerSuccess(message);
+      loginWithUser(user, false);
+    },
+    [loginWithUser],
+  );
+
+  useEffect(() => {
+    if (quickLoginTried.current || !trusted) return;
     const saved = getGoogleRememberedEmail();
-    if (!saved || !isGoogleTrustedOnDevice()) return false;
-    const user = findUserByEmail(saved);
-    if (!user) return false;
-    loginWithUser(user);
-    return true;
-  }
+    if (!saved) return;
+    quickLoginTried.current = true;
+    void findUserByEmailAsync(saved).then((user) => {
+      if (user) loginWithUser(user);
+    });
+  }, [trusted, loginWithUser]);
 
   async function startGoogleOAuthPopup() {
     setBannerError(null);
+    setBannerSuccess(null);
     setError(null);
     setBusy(true);
     try {
       await loadGsiScript();
       const oauth2 = window.google?.accounts?.oauth2;
       if (!oauth2) {
-        setBannerError('No se pudo cargar el inicio de sesión de Google. Intenta de nuevo o usa tu correo PROJECT VIGIA.');
+        setBannerError(
+          'No se pudo cargar Google. Permite ventanas emergentes o usa el formulario de correo PROJECT VIGIA arriba.',
+        );
         setBusy(false);
         return;
       }
@@ -143,6 +160,7 @@ export default function GoogleSignInPanel({ onSuccess, onCancel, compact }: Goog
         client_id: googleClientId,
         scope: OAUTH_SCOPE,
         ux_mode: 'popup',
+        select_account: true,
         callback: async (response) => {
           try {
             if (response.error) {
@@ -152,7 +170,7 @@ export default function GoogleSignInPanel({ onSuccess, onCancel, compact }: Goog
               if (!benign) {
                 setBannerError(
                   response.error_description?.trim() ||
-                    'No se pudo completar el inicio con Google. Puedes usar tu correo PROJECT VIGIA abajo.',
+                    'No se pudo completar el inicio con Google. Intenta de nuevo.',
                 );
               }
               return;
@@ -168,33 +186,28 @@ export default function GoogleSignInPanel({ onSuccess, onCancel, compact }: Goog
             });
 
             const data = (await tokenRes.json()) as
-              | { ok: true; email: string }
+              | { ok: true; email: string; user: PublicStoredUser; created?: boolean }
               | { ok: false; error: string };
 
             if (!tokenRes.ok || !data.ok) {
               if ('error' in data && data.error === 'server_config') {
-                setShowForm(true);
-                setBannerError(null);
-                setError(
-                  'Google OAuth no está configurado en el servidor (falta GOOGLE_CLIENT_SECRET). Usa correo y contraseña PROJECT VIGIA.',
+                setBannerError(
+                  'Falta configurar Google en el servidor (GOOGLE_CLIENT_SECRET en Vercel). Mientras tanto usa correo y contraseña PROJECT VIGIA arriba.',
                 );
                 return;
               }
               setBannerError(
-                'Google no devolvió una sesión válida. Si estás en un equipo público, inicia sesión en tu cuenta Google en la ventana emergente o usa correo PROJECT VIGIA.',
+                'No se pudo validar tu cuenta de Google. Comprueba que elegiste la cuenta correcta e intenta otra vez.',
               );
               return;
             }
 
-            const user = findUserByEmail(data.email);
-            if (!user) {
-              setBannerError(
-                `No hay cuenta PROJECT VIGIA registrada con ${data.email}. Crea tu cuenta con ese mismo correo o inicia sesión arriba.`,
-              );
-              return;
-            }
-
-            loginWithUser(user);
+            completeGoogleAuth(
+              data.user,
+              data.created
+                ? `Cuenta creada con ${data.email}. Ya puedes entrar con Google.`
+                : `Sesión iniciada como ${data.email}`,
+            );
           } finally {
             setBusy(false);
           }
@@ -204,30 +217,33 @@ export default function GoogleSignInPanel({ onSuccess, onCancel, compact }: Goog
       client.requestCode();
     } catch {
       setBusy(false);
-      setBannerError('No se pudo abrir Google. Comprueba que las ventanas emergentes estén permitidas o usa correo PROJECT VIGIA.');
+      setBannerError(
+        'No se pudo abrir Google. Permite ventanas emergentes en el navegador e intenta de nuevo.',
+      );
     }
   }
 
   function handleGoogleButtonClick() {
     setBannerError(null);
+    setBannerSuccess(null);
     setError(null);
-    if (tryQuickLogin()) return;
+    setShowVigiaForm(false);
 
     if (!oauthConfigured) {
-      const saved = getGoogleRememberedEmail();
-      setShowForm(true);
-      if (saved) setEmail(saved);
+      setBannerError(
+        'Google OAuth no está configurado (falta NEXT_PUBLIC_GOOGLE_CLIENT_ID). Usa correo y contraseña PROJECT VIGIA en el formulario de arriba.',
+      );
       return;
     }
 
     void startGoogleOAuthPopup();
   }
 
-  function handleFormSubmit(e: React.FormEvent) {
+  async function handleVigiaFormSubmit(e: React.FormEvent) {
     e.preventDefault();
     setError(null);
     setBusy(true);
-    const result = authenticateUser(email, password);
+    const result = await authenticateUserAsync(email, password);
     if (!result.ok) {
       setError(result.error);
       setBusy(false);
@@ -238,31 +254,24 @@ export default function GoogleSignInPanel({ onSuccess, onCancel, compact }: Goog
     loginWithUser(result.user);
   }
 
-  function openManualForm() {
-    setBannerError(null);
-    setError(null);
-    const saved = getGoogleRememberedEmail();
-    setShowForm(true);
-    if (saved) setEmail(saved);
-  }
-
-  if (showForm) {
+  if (showVigiaForm) {
     return (
       <div className={`rounded-xl border border-slate-200 bg-slate-50/90 p-4 ${compact ? '' : ''}`}>
         <p className="mb-3 flex items-center gap-2 text-sm font-semibold text-slate-800">
           <GoogleLogo />
-          Cuenta PROJECT VIGIA
+          Correo y contraseña PROJECT VIGIA
         </p>
         <p className="mb-4 text-xs leading-relaxed text-slate-600">
-          Usa el <strong>mismo correo y contraseña</strong> con los que te registraste en PROJECT VIGIA. Si ya iniciaste
-          sesión con Google en este navegador, la próxima vez podrás usar el botón de Google con un solo clic.
+          Esto <strong>no</strong> es la contraseña de Gmail: es la que definiste en{' '}
+          <strong>Crear cuenta</strong>. Para entrar con tu cuenta Google real, usa el botón de
+          Google abajo.
         </p>
         {error ? (
           <p className="mb-3 rounded-md bg-red-50 px-3 py-2 text-sm text-red-800" role="alert">
             {error}
           </p>
         ) : null}
-        <form onSubmit={handleFormSubmit} className="space-y-4">
+        <form onSubmit={handleVigiaFormSubmit} className="space-y-4">
           <div>
             <label htmlFor="google-email" className="mb-2 block text-sm font-semibold text-slate-800">
               Correo electrónico
@@ -280,12 +289,12 @@ export default function GoogleSignInPanel({ onSuccess, onCancel, compact }: Goog
           </div>
           <PasswordField
             id="google-password"
-            label="Contraseña"
+            label="Contraseña PROJECT VIGIA"
             value={password}
             onChange={setPassword}
             autoComplete="current-password"
             minLength={1}
-            placeholder="Tu contraseña"
+            placeholder="La de tu registro"
           />
           <button
             type="submit"
@@ -298,7 +307,7 @@ export default function GoogleSignInPanel({ onSuccess, onCancel, compact }: Goog
         <button
           type="button"
           onClick={() => {
-            setShowForm(false);
+            setShowVigiaForm(false);
             setError(null);
             onCancel?.();
           }}
@@ -314,7 +323,12 @@ export default function GoogleSignInPanel({ onSuccess, onCancel, compact }: Goog
     <div>
       {remembered && trusted ? (
         <p className="mb-2 text-center text-xs text-slate-500">
-          Acceso rápido en este dispositivo: <strong className="text-slate-700">{remembered}</strong>
+          Acceso rápido: <strong className="text-slate-700">{remembered}</strong>
+        </p>
+      ) : null}
+      {bannerSuccess ? (
+        <p className="mb-3 rounded-md border border-emerald-200 bg-emerald-50 px-3 py-2 text-xs leading-snug text-emerald-900">
+          {bannerSuccess}
         </p>
       ) : null}
       {bannerError ? (
@@ -326,24 +340,27 @@ export default function GoogleSignInPanel({ onSuccess, onCancel, compact }: Goog
         type="button"
         onClick={handleGoogleButtonClick}
         disabled={busy}
-        className="flex w-full items-center justify-center gap-3 rounded-md border border-slate-300 bg-white py-3 text-sm font-semibold text-slate-800 shadow-sm transition hover:bg-slate-50 disabled:opacity-60"
+        className="flex w-full items-center justify-center gap-3 rounded-lg border border-slate-300 bg-white py-3.5 text-sm font-semibold text-slate-800 shadow-sm transition hover:border-blue-300 hover:bg-blue-50/50 disabled:opacity-60"
       >
         <GoogleLogo />
-        {busy ? 'Conectando con Google…' : 'Iniciar sesión con Google'}
+        {busy ? 'Abriendo Google…' : 'Iniciar sesión con Google'}
       </button>
-      {oauthConfigured ? (
-        <button
-          type="button"
-          onClick={openManualForm}
-          className="mt-3 w-full text-center text-xs font-medium text-slate-600 underline-offset-2 hover:text-blue-700 hover:underline"
-        >
-          Usar correo y contraseña de PROJECT VIGIA
-        </button>
-      ) : !trusted ? (
-        <p className="mt-2 text-center text-xs text-slate-500">
-          También puedes usar tu cuenta PROJECT VIGIA: pulsa el botón de Google para continuar.
-        </p>
-      ) : null}
+      <p className="mt-2 text-center text-[11px] leading-relaxed text-slate-500">
+        Se abre la ventana oficial de Google. Si ya tienes sesión en el PC, entras con un clic.
+      </p>
+      <button
+        type="button"
+        onClick={() => {
+          setBannerError(null);
+          setError(null);
+          const saved = getGoogleRememberedEmail();
+          setShowVigiaForm(true);
+          if (saved) setEmail(saved);
+        }}
+        className="mt-3 w-full text-center text-xs font-medium text-slate-600 underline-offset-2 hover:text-blue-700 hover:underline"
+      >
+        Usar correo y contraseña de PROJECT VIGIA (no es la de Gmail)
+      </button>
     </div>
   );
 }

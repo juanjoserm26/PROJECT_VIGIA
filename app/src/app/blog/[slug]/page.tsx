@@ -30,7 +30,9 @@ function SectionBlock({ section }: { section: BlogSection }) {
   switch (section.type) {
     case 'paragraph':
       return (
-        <p className="text-slate-600 leading-relaxed text-lg mb-6 last:mb-0">{section.text}</p>
+        <p className="mb-6 text-justify text-lg leading-relaxed text-slate-600 hyphens-auto last:mb-0">
+          {section.text}
+        </p>
       );
     case 'heading':
       return (
@@ -38,7 +40,7 @@ function SectionBlock({ section }: { section: BlogSection }) {
       );
     case 'list':
       return (
-        <ul className="list-disc list-inside space-y-3 text-slate-600 text-lg mb-8 ml-1">
+        <ul className="mb-8 ml-1 list-inside list-disc space-y-3 text-justify text-lg leading-relaxed text-slate-600 hyphens-auto">
           {section.items.map((item) => (
             <li key={item}>{item}</li>
           ))}
@@ -99,7 +101,7 @@ export default async function BlogArticlePage({ params }: Props) {
     <div className="flex min-h-screen flex-col bg-white">
       <Header />
 
-      <article>
+      <article lang="es">
         <header className="relative min-h-[280px] sm:min-h-[360px] flex flex-col justify-end border-b border-slate-200">
           <div className="absolute inset-0">
             <Image
@@ -154,7 +156,7 @@ export default async function BlogArticlePage({ params }: Props) {
             <p className="text-slate-800 font-semibold text-lg mb-2">
               ¿Quieres aplicar esto a tus cámaras existentes?
             </p>
-            <p className="text-slate-600 mb-6">
+            <p className="mb-6 text-justify leading-relaxed text-slate-600 hyphens-auto">
               Suscripción SaaS por planes, sin venta de hardware. Te asesoramos en integración ONVIF y despliegue.
             </p>
             <div className="flex flex-col sm:flex-row gap-3">

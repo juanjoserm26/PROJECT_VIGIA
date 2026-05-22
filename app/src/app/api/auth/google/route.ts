@@ -1,8 +1,15 @@
 import { NextResponse } from 'next/server';
+import {
+  findOrCreateUserFromGoogleServer,
+  toPublicUser,
+} from '@/lib/users-repository.server';
+
+export const runtime = 'nodejs';
+export const dynamic = 'force-dynamic';
 
 /**
  * Intercambia el código OAuth de Google Identity Services (ux_mode: popup, redirect_uri: postmessage)
- * por el perfil del usuario. El cliente debe comprobar que exista cuenta en PROJECT VIGIA.
+ * por el perfil del usuario y abre sesión en PROJECT VIGIA (crea cuenta si es la primera vez con ese correo).
  */
 export async function POST(req: Request) {
   try {
@@ -61,10 +68,17 @@ export async function POST(req: Request) {
       return NextResponse.json({ ok: false as const, error: 'email_not_verified' }, { status: 403 });
     }
 
+    const user = await findOrCreateUserFromGoogleServer(
+      profile.email,
+      typeof profile.name === 'string' ? profile.name : '',
+    );
+
     return NextResponse.json({
       ok: true as const,
-      email: profile.email,
-      name: typeof profile.name === 'string' ? profile.name : '',
+      email: user.email,
+      name: `${user.nombres} ${user.apellidos}`.trim(),
+      user: toPublicUser(user),
+      created: user.authProvider === 'google',
     });
   } catch {
     return NextResponse.json({ ok: false as const, error: 'internal' }, { status: 500 });

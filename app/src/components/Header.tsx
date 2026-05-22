@@ -6,6 +6,7 @@ import { useCallback, useEffect, useId, useState } from 'react';
 import type { FocusEvent } from 'react';
 import Logo from './Logo';
 import PqrsDialog from './PqrsDialog';
+import PqrsNotificationsBell from './PqrsNotificationsBell';
 import { clearDemoSession, DEMO_SESSION_KEY, getDemoSession, type DemoSession, VIGIA_SESSION_CHANGED_EVENT } from '@/lib/demo-session';
 
 /** Puerta entreabierta + salida (línea fina, para “cerrar sesión”) */
@@ -144,6 +145,7 @@ export default function Header() {
             <Link href="/portal-cliente" className="hover:text-white transition shrink-0">
               Portal cliente
             </Link>
+            {session ? <PqrsNotificationsBell /> : null}
           </div>
         </div>
       </div>
@@ -156,7 +158,9 @@ export default function Header() {
             <Link href="/" className="flex shrink-0 items-center gap-3 group">
               <Logo size={48} className="transition-transform group-hover:scale-105" />
               <div className="hidden sm:flex flex-col leading-tight">
-                <span className="text-xl font-bold text-slate-900">PROJECT VIGIA</span>
+                <span className="text-xl font-bold text-slate-900">
+                  PROJECT <span className="text-blue-600">VIGIA</span>
+                </span>
                 <span className="text-xs text-slate-500 uppercase tracking-wider">
                   SaaS · varios sectores
                 </span>
@@ -383,6 +387,14 @@ export default function Header() {
             >
               Portal cliente
             </Link>
+            {session ? (
+              <div className="mx-3 my-2 rounded-lg bg-slate-900 px-3 py-2">
+                <p className="mb-2 text-xs font-semibold uppercase tracking-wider text-slate-400">
+                  Notificaciones PQRS
+                </p>
+                <PqrsNotificationsBell className="inline-block" />
+              </div>
+            ) : null}
           </nav>
         </div>
       )}

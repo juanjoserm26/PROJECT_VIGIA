@@ -78,3 +78,6 @@ export const demoVideos: DemoVideoItem[] = [
     iframeSrc: null,
   },
 ];
+
+/** Solo para /demostracion (Mis cámaras usa el listado completo `demoVideos`). */
+export const demoVideosDemostracion = demoVideos.slice(0, 2);

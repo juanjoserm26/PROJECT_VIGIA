@@ -1,8 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-
-type PqrsType = 'peticion' | 'queja' | 'reclamo' | 'sugerencia';
+import { PQRS_UPDATED_EVENT, type PqrsType } from '@/lib/pqrs-types';
 
 interface PqrsDialogProps {
   open: boolean;
@@ -58,6 +57,7 @@ export default function PqrsDialog({ open, onClose }: PqrsDialogProps) {
         setTelefono('');
         setMensaje('');
         setTipo('peticion');
+        window.dispatchEvent(new CustomEvent(PQRS_UPDATED_EVENT));
       } else {
         setStatus('error');
       }

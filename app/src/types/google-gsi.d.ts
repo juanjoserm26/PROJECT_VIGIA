@@ -14,6 +14,7 @@ export type GisCodeClientConfig = {
   client_id: string;
   scope: string;
   ux_mode: 'popup';
+  select_account?: boolean;
   callback: (response: GisCodeResponse) => void;
 };
 

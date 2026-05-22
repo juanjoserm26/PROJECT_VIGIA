@@ -1,18 +1,20 @@
+import dynamic from 'next/dynamic';
 import Image from 'next/image';
 import Header from '@/components/Header';
 import Reveal from '@/components/Reveal';
 import Features from '@/components/Features';
 import WhatDefinesUs from '@/components/WhatDefinesUs';
-import Team from '@/components/Team';
-import PricingPlans from '@/components/PricingPlans';
-import Testimonials from '@/components/Testimonials';
-import Blog from '@/components/Blog';
-import Newsletter from '@/components/Newsletter';
-import ContactForm from '@/components/ContactForm';
-import Certifications from '@/components/Certifications';
-import BusinessPlan from '@/components/BusinessPlan';
+import ContactInfoSection from '@/components/ContactInfoSection';
 import Footer from '@/components/Footer';
 import MobileSiteQr from '@/components/MobileSiteQr';
+
+const PricingPlans = dynamic(() => import('@/components/PricingPlans'));
+const Testimonials = dynamic(() => import('@/components/Testimonials'));
+const Team = dynamic(() => import('@/components/Team'));
+const BusinessPlan = dynamic(() => import('@/components/BusinessPlan'));
+const Blog = dynamic(() => import('@/components/Blog'));
+const Newsletter = dynamic(() => import('@/components/Newsletter'));
+const Certifications = dynamic(() => import('@/components/Certifications'));
 
 export default function Home() {
   const initialSiteUrl =
@@ -136,8 +138,8 @@ export default function Home() {
       {/* Newsletter */}
       <Newsletter />
 
-      {/* Contact Form */}
-      <ContactForm />
+      {/* Contacto: datos + CTA a asesoría (formulario único en /asesoria) */}
+      <ContactInfoSection />
 
       {/* Certifications */}
       <Certifications />

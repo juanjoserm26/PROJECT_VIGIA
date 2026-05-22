@@ -1,0 +1,13 @@
+{
+  "terminal.integrated.defaultProfile.windows": "PowerShell",
+  "terminal.integrated.fontSize": 14,
+  "terminal.integrated.foreground": "#E4E4E4",
+  "terminal.integrated.background": "#1E1E1E",
+  "terminal.integrated.cursorStyle": "line",
+  "workbench.colorCustomizations": {
+    "terminal.foreground": "#E4E4E4",
+    "terminal.background": "#1E1E1E",
+    "terminalCursor.foreground": "#1E1E1E",
+    "terminalCursor.background": "#E4E4E4"
+  }
+}

@@ -16,7 +16,7 @@ import {
   isRegisteredEmail,
   normalizeEmail,
   passwordValidationMessages,
-  registerUser,
+  registerUserAsync,
 } from '@/lib/user-store';
 
 const MONTHS = [
@@ -260,7 +260,7 @@ export default function RegisterForm() {
     else clearFieldWarning('fecha');
   }
 
-  function onSubmit(e: React.FormEvent) {
+  async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
     setFieldErrors({});
     setFieldWarnings({});
@@ -286,7 +286,7 @@ export default function RegisterForm() {
 
     setBusy(true);
 
-    const result = registerUser({
+    const result = await registerUserAsync({
       nombres,
       apellidos,
       birthDay,
@@ -314,7 +314,7 @@ export default function RegisterForm() {
       return;
     }
 
-    const session = buildSessionForUser(result.user, true);
+    const session = buildSessionForUser(result.user, false);
     setDemoSession(session);
     router.push(redirectAfter);
     router.refresh();

@@ -3,16 +3,17 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "next dev --turbo",
-    "dev:webpack": "next dev --webpack",
-    "dev:turbo": "next dev --turbo",
+    "dev": "node --max-old-space-size=8192 ./node_modules/next/dist/bin/next dev --webpack",
+    "dev:webpack": "node --max-old-space-size=8192 ./node_modules/next/dist/bin/next dev --webpack",
+    "dev:turbo": "node --max-old-space-size=8192 ./node_modules/next/dist/bin/next dev --turbo",
     "clean": "node -e \"require('fs').rmSync('.next',{recursive:true,force:true})\"",
-    "dev:clean": "npm run clean && next dev --turbo",
-    "build": "next build --webpack",
+    "dev:clean": "npm run clean && node --max-old-space-size=8192 ./node_modules/next/dist/bin/next dev --webpack",
+    "build": "node --max-old-space-size=8192 ./node_modules/next/dist/bin/next build --webpack",
     "start": "next start",
     "lint": "eslint",
     "generate:canvas-pdf": "node scripts/generate-canvas-pdf.mjs",
-    "import:canvas-pdf": "node scripts/import-canvas-pdf.mjs"
+    "import:canvas-pdf": "node scripts/import-canvas-pdf.mjs",
+    "generate:pitch-guide": "node scripts/generate-pitch-guide.mjs"
   },
   "dependencies": {
     "next": "16.2.6",

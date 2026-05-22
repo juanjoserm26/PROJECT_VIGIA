@@ -27,6 +27,16 @@ export function getDemoSession(): DemoSession | null {
   }
 }
 
+/** Sesión lista para el panel Mis cámaras (quita freshAccount si quedó de un registro anterior). */
+export function getDemoSessionForMonitoreo(): DemoSession | null {
+  const session = getDemoSession();
+  if (!session) return null;
+  if (!session.freshAccount) return session;
+  const updated: DemoSession = { ...session, freshAccount: false };
+  setDemoSession(updated);
+  return updated;
+}
+
 export function setDemoSession(session: DemoSession): void {
   if (typeof window === 'undefined') return;
   window.localStorage.setItem(DEMO_SESSION_KEY, JSON.stringify(session));

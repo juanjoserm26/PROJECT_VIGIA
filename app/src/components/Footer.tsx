@@ -57,8 +57,8 @@ export default function Footer() {
             <div className="space-y-4 text-sm text-slate-400">
               <div>
                 <p className="font-semibold text-slate-300 mb-1">Sede principal</p>
-                <p>Universidad Industrial de Santander</p>
-                <p>Cra. 27 #9, Bucaramanga</p>
+                <p>Cra. 21 #101-25</p>
+                <p>Barrio Fontana, Bucaramanga</p>
                 <p>Santander, Colombia</p>
               </div>
             </div>

@@ -5,7 +5,7 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { useMemo, useState } from 'react';
 import GoogleSignInPanel, { buildSessionForUser } from '@/components/GoogleSignInPanel';
 import PasswordField, { authInputClass } from '@/components/PasswordField';
-import { authenticateUser } from '@/lib/user-store';
+import { authenticateUserAsync } from '@/lib/user-store';
 import { setDemoSession } from '@/lib/demo-session';
 import { getSafeInternalRedirect } from '@/lib/auth-redirect';
 
@@ -33,11 +33,11 @@ export default function LoginForm() {
     router.refresh();
   }
 
-  function onSubmit(e: React.FormEvent) {
+  async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
     setError(null);
     setBusy(true);
-    const result = authenticateUser(email, password);
+    const result = await authenticateUserAsync(email, password);
     if (!result.ok) {
       setError(result.error);
       setBusy(false);
@@ -112,7 +112,8 @@ export default function LoginForm() {
       />
 
       <p className="mt-6 text-center text-xs text-slate-500">
-        Los datos de registro se guardan en este navegador. En producción se conectarán a un servidor seguro.
+        Las cuentas se guardan en el servidor del proyecto y en este navegador. Google usa la ventana oficial
+        de inicio de sesión (no la contraseña de Gmail en el formulario).
       </p>
     </div>
   );

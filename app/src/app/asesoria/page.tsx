@@ -14,7 +14,7 @@ export default function AsesoriaPage() {
     <div className="flex min-h-screen flex-col">
       <Header />
       <main className="flex-1">
-        <ContactForm variant="asesoria" />
+        <ContactForm />
       </main>
       <Footer />
     </div>

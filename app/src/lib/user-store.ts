@@ -23,7 +23,11 @@ export type StoredUser = {
   tipoDocumento: DocumentType;
   numeroDocumento: string;
   createdAt: number;
+  /** Cuenta creada vía Google OAuth (no usa contraseña local en el login manual). */
+  authProvider?: 'local' | 'google';
 };
+
+export type PublicStoredUser = Omit<StoredUser, 'password'>;
 
 export type RegisterUserInput = Omit<StoredUser, 'id' | 'createdAt' | 'email' | 'password'> & {
   email: string;
@@ -78,9 +82,41 @@ function writeUsers(users: StoredUser[]): void {
   window.localStorage.setItem(USERS_STORAGE_KEY, JSON.stringify(users));
 }
 
+export function upsertUserInBrowserCache(user: StoredUser): void {
+  const users = readUsers();
+  const idx = users.findIndex((u) => u.email === user.email);
+  if (idx >= 0) users[idx] = user;
+  else users.push(user);
+  writeUsers(users);
+}
+
+export function cacheUserFromPublic(publicUser: PublicStoredUser, password = ''): StoredUser {
+  const user: StoredUser = { ...publicUser, password };
+  upsertUserInBrowserCache(user);
+  return user;
+}
+
+async function fetchUserFromServer(email: string): Promise<StoredUser | null> {
+  try {
+    const res = await fetch(`/api/users?email=${encodeURIComponent(normalizeEmail(email))}`);
+    if (!res.ok) return null;
+    const data = (await res.json()) as { ok: boolean; user?: PublicStoredUser };
+    if (!data.ok || !data.user) return null;
+    return cacheUserFromPublic(data.user, '');
+  } catch {
+    return null;
+  }
+}
+
 export function findUserByEmail(email: string): StoredUser | null {
   const key = normalizeEmail(email);
   return readUsers().find((u) => u.email === key) ?? null;
+}
+
+export async function findUserByEmailAsync(email: string): Promise<StoredUser | null> {
+  const local = findUserByEmail(email);
+  if (local) return local;
+  return fetchUserFromServer(email);
 }
 
 function findUserByDocumentPair(tipo: DocumentType, numero: string): StoredUser | null {
@@ -202,10 +238,61 @@ export function registerUser(
     tipoDocumento: input.tipoDocumento,
     numeroDocumento: input.numeroDocumento.trim(),
     createdAt: Date.now(),
+    authProvider: 'local',
   };
 
   writeUsers([...readUsers(), user]);
   return { ok: true, user };
+}
+
+export async function registerUserAsync(
+  input: RegisterUserInput,
+): Promise<
+  | { ok: true; user: StoredUser }
+  | { ok: false; error: string; field: RegisterFailureField }
+> {
+  try {
+    const res = await fetch('/api/users/register', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(input),
+    });
+    const data = await res.json();
+    if (data.ok && data.user) {
+      const user = cacheUserFromPublic(data.user as PublicStoredUser, input.password);
+      return { ok: true, user };
+    }
+    if (!data.ok && data.field) {
+      return { ok: false, error: data.error, field: data.field };
+    }
+  } catch {
+    /* servidor no disponible: registro local */
+  }
+  return registerUser(input);
+}
+
+export async function authenticateUserAsync(
+  email: string,
+  password: string,
+): Promise<{ ok: true; user: StoredUser } | { ok: false; error: string }> {
+  try {
+    const res = await fetch('/api/users/login', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email, password }),
+    });
+    const data = await res.json();
+    if (data.ok && data.user) {
+      const user = cacheUserFromPublic(data.user as PublicStoredUser, password);
+      return { ok: true, user };
+    }
+    if (!data.ok && data.error) {
+      return { ok: false, error: data.error };
+    }
+  } catch {
+    /* fallback local */
+  }
+  return authenticateUser(email, password);
 }
 
 export function authenticateUser(

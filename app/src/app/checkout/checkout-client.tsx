@@ -39,6 +39,21 @@ export default function CheckoutClient() {
     step: 'form',
   });
 
+  /** URL https://… para que el celular abra el navegador (no un editor de texto). */
+  const checkoutQrUrl = useMemo(() => {
+    const base =
+      process.env.NEXT_PUBLIC_SITE_URL?.trim().replace(/\/$/, '') ||
+      (typeof window !== 'undefined' ? window.location.origin : '');
+    if (!base) return 'https://projectvigia.vercel.app/plans';
+    const url = new URL('/plans', base);
+    url.searchParams.set('plan', planSlug);
+    if (paymentState.step === 'success' && paymentState.transactionId) {
+      url.searchParams.set('ref', paymentState.transactionId);
+    }
+    url.searchParams.set('utm_source', 'checkout_qr');
+    return url.toString();
+  }, [planSlug, paymentState.step, paymentState.transactionId]);
+
   const [checkoutAllowed, setCheckoutAllowed] = useState<boolean | undefined>(undefined);
 
   useEffect(() => {
@@ -246,54 +261,75 @@ export default function CheckoutClient() {
               )}
 
               {paymentState.step === 'success' && (
-                <div className="bg-white rounded-lg shadow-lg border border-slate-200 p-8">
-                  <div className="text-center mb-8">
-                    <div className="text-5xl text-green-500 mb-4">✓</div>
-                    <h2 className="text-2xl font-bold text-slate-900">
-                      ¡Solicitud Recibida!
+                <div className="overflow-hidden rounded-2xl border border-slate-200/90 bg-white shadow-xl shadow-slate-300/30">
+                  <div className="bg-gradient-to-br from-blue-700 via-blue-600 to-blue-800 px-6 py-10 text-center text-white sm:px-10">
+                    <div className="mx-auto mb-5 flex h-16 w-16 items-center justify-center rounded-full bg-white/15 ring-4 ring-white/25 backdrop-blur-sm">
+                      <svg
+                        className="h-9 w-9 text-white"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                        strokeWidth={2.5}
+                        aria-hidden
+                      >
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                      </svg>
+                    </div>
+                    <h2 className="text-2xl font-bold tracking-tight sm:text-3xl">
+                      ¡Solicitud recibida!
                     </h2>
-                    <p className="text-slate-600 mt-2">
-                      Tu solicitud para {selectedPlan.name} ha sido registrada
+                    <p className="mx-auto mt-2 max-w-md text-sm text-blue-100 sm:text-base">
+                      Registramos tu interés en{' '}
+                      <span className="font-semibold text-white">{selectedPlan.name}</span>. Te
+                      contactaremos para confirmar integración y capacitación.
                     </p>
                   </div>
 
-                  <div className="bg-slate-50 rounded-lg p-6 mb-8 border border-slate-200">
-                    <div className="space-y-3">
-                      <div className="flex justify-between">
-                        <span className="text-slate-600">Plan:</span>
-                        <span className="font-semibold text-slate-900">{selectedPlan.name}</span>
-                      </div>
-                      <div className="flex justify-between gap-4">
-                        <span className="text-slate-600">Precio mensual:</span>
-                        <span className="font-semibold text-slate-900 text-right">
-                          {selectedPlan.price} {selectedPlan.priceNote}
-                        </span>
-                      </div>
-                      <div className="flex justify-between border-t border-slate-200 pt-3">
-                        <span className="text-slate-600">Número de Solicitud:</span>
-                        <span className="font-mono text-sm text-blue-600">
-                          {paymentState.transactionId}
-                        </span>
-                      </div>
+                  <div className="space-y-6 p-6 sm:p-8">
+                    <div className="rounded-xl border border-slate-200 bg-slate-50/80 p-5">
+                      <p className="mb-4 text-xs font-bold uppercase tracking-wider text-slate-500">
+                        Detalle de la solicitud
+                      </p>
+                      <dl className="space-y-4 text-sm">
+                        <div className="flex flex-col gap-1 sm:flex-row sm:justify-between sm:gap-4">
+                          <dt className="text-slate-500">Plan</dt>
+                          <dd className="font-semibold text-slate-900">{selectedPlan.name}</dd>
+                        </div>
+                        <div className="flex flex-col gap-1 sm:flex-row sm:justify-between sm:gap-4">
+                          <dt className="text-slate-500">Precio mensual</dt>
+                          <dd className="font-semibold text-slate-900">
+                            {selectedPlan.price}{' '}
+                            <span className="font-normal text-slate-600">{selectedPlan.priceNote}</span>
+                          </dd>
+                        </div>
+                        <div className="border-t border-slate-200 pt-4">
+                          <dt className="mb-1.5 text-slate-500">Número de solicitud</dt>
+                          <dd className="break-all rounded-lg border border-blue-100 bg-white px-3 py-2 font-mono text-xs text-blue-700 sm:text-sm">
+                            {paymentState.transactionId}
+                          </dd>
+                        </div>
+                      </dl>
                     </div>
-                  </div>
 
-                  <div className="space-y-4">
-                    <p className="text-slate-700 mb-2">
-                      Pronto recibirás un correo de confirmación en:
-                    </p>
-                    <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 mb-6">
-                      <p className="text-center font-semibold text-slate-900">{email}</p>
+                    <div className="rounded-xl border border-blue-100 bg-gradient-to-br from-blue-50 to-white p-5">
+                      <p className="text-sm font-medium text-slate-700">
+                        Confirmación al correo registrado
+                      </p>
+                      <p className="mt-2 break-all text-center text-base font-semibold text-slate-900">
+                        {email}
+                      </p>
+                      <p className="mt-4 text-center text-xs leading-relaxed text-slate-600">
+                        Respuesta del equipo en un plazo máximo de{' '}
+                        <strong className="text-slate-800">24 horas hábiles</strong>.
+                      </p>
                     </div>
-                    <p className="text-sm text-slate-600 mb-6">
-                      Nos pondremos en contacto dentro de 24 horas para ayudarte con la implementación y capacitación.
-                    </p>
+
                     <button
                       type="button"
                       onClick={() => router.push('/')}
-                      className="w-full bg-blue-600 text-white font-semibold py-3 rounded-lg hover:bg-blue-700 transition shadow-lg"
+                      className="w-full rounded-xl bg-blue-600 py-3.5 text-sm font-semibold text-white shadow-lg shadow-blue-600/25 transition hover:bg-blue-700"
                     >
-                      Volver al Inicio
+                      Volver al inicio
                     </button>
                   </div>
                 </div>
@@ -320,45 +356,54 @@ export default function CheckoutClient() {
             </div>
 
             <div className="md:col-span-1">
-              <div className="bg-gradient-to-br from-slate-50 to-white rounded-lg shadow-lg border border-slate-200 p-6 sticky top-4">
-                <h2 className="text-lg font-semibold text-slate-900 mb-6 border-b-2 border-blue-600 pb-3">
-                  Resumen
-                </h2>
-
-                <div className="border-b border-slate-200 pb-6 mb-6">
-                  <h3 className="font-semibold text-slate-900 mb-2 text-lg">
-                    {selectedPlan.name}
-                  </h3>
-                  <p className="text-3xl font-bold text-blue-600 leading-tight">
+              <div className="sticky top-4 overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-lg shadow-slate-200/50">
+                <div className="border-b border-slate-100 bg-slate-50/90 px-5 py-4">
+                  <h2 className="text-sm font-bold uppercase tracking-wider text-slate-500">
+                    Resumen
+                  </h2>
+                  <h3 className="mt-1 text-lg font-bold text-slate-900">{selectedPlan.name}</h3>
+                  <p className="mt-1 text-2xl font-bold leading-tight text-blue-600">
                     {selectedPlan.price}{' '}
-                    <span className="text-sm text-slate-600 font-normal">{selectedPlan.priceNote}</span>
-                  </p>
-
-                  <div className="mt-6 flex justify-center">
-                    <QRCode
-                      data={`PROJECT VIGIA | ${selectedPlan.name} | ${selectedPlan.price} ${selectedPlan.priceNote}`}
-                      size={150}
-                    />
-                  </div>
-                  <p className="text-xs text-slate-600 text-center mt-3 font-medium">
-                    Escanea el código QR para más información
+                    <span className="text-sm font-medium text-slate-500">{selectedPlan.priceNote}</span>
                   </p>
                 </div>
 
-                <div>
-                  <h4 className="font-semibold text-slate-900 mb-4">
-                    Incluye:
+                <div className="border-b border-slate-100 px-5 py-6">
+                  <div className="flex justify-center">
+                    <QRCode data={checkoutQrUrl} size={150} />
+                  </div>
+                  <p className="mt-3 text-center text-xs font-medium text-slate-600">
+                    Escanea el código QR para ver el plan en PROJECT VIGIA
+                  </p>
+                  {paymentState.step === 'success' && paymentState.transactionId ? (
+                    <p className="mt-1 text-center text-[10px] text-slate-500">
+                      Incluye referencia de tu solicitud al abrir el enlace
+                    </p>
+                  ) : null}
+                </div>
+
+                <div className="border-t border-slate-100 px-5 py-5">
+                  <h4 className="mb-3 text-xs font-bold uppercase tracking-wider text-slate-500">
+                    Incluye
                   </h4>
-                  <ul className="space-y-2 text-sm text-slate-700">
+                  <ul className="space-y-2.5 text-sm text-slate-700">
                     {summaryFeatures.map((line) => (
-                      <li key={line}>✓ {line}</li>
+                      <li key={line} className="flex items-start gap-2">
+                        <span
+                          className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-blue-100 text-[10px] font-bold text-blue-700"
+                          aria-hidden
+                        >
+                          ✓
+                        </span>
+                        <span>{line}</span>
+                      </li>
                     ))}
                   </ul>
                 </div>
 
-                <div className="mt-6 pt-6 border-t border-slate-200">
-                  <p className="text-xs text-slate-600 text-center font-medium">
-                    Se requiere validación de datos corporativos para acceso al sistema.
+                <div className="border-t border-slate-100 bg-slate-50/60 px-5 py-4">
+                  <p className="text-center text-[11px] leading-relaxed text-slate-500">
+                    Validación de datos corporativos antes del acceso al sistema.
                   </p>
                 </div>
               </div>

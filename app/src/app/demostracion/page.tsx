@@ -3,7 +3,7 @@ import Link from 'next/link';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import DemoMedia from '@/components/DemoMedia';
-import { demoVideos } from '@/lib/demo-videos';
+import { demoVideosDemostracion } from '@/lib/demo-videos';
 
 export const metadata: Metadata = {
   title: 'Demostración en vivo | PROJECT VIGIA',
@@ -22,7 +22,7 @@ export default function DemostracionPage() {
             <p className="mb-3 text-xs font-semibold uppercase tracking-[0.2em] text-blue-300">Prototipo técnico</p>
             <h1 className="text-4xl font-bold tracking-tight text-white sm:text-5xl">Demostración en vivo</h1>
             <p className="mx-auto mt-5 max-w-2xl text-lg text-slate-300 leading-relaxed">
-              Cinco escenas grabadas desde el prototipo: en cada vídeo ves la salida del análisis con IA (cajas de
+              Escenas grabadas desde el prototipo: en cada vídeo ves la salida del análisis con IA (cajas de
               detección, seguimiento). Es la misma línea técnica que aplicamos después a tus cámaras IP por ONVIF/RTSP.
             </p>
             <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
@@ -51,7 +51,7 @@ export default function DemostracionPage() {
             <span className="mr-1 hidden text-xs font-semibold uppercase tracking-wide text-slate-400 sm:inline">
               Ir a
             </span>
-            {demoVideos.map((v) => (
+            {demoVideosDemostracion.map((v) => (
               <a
                 key={v.id}
                 href={`#video-${v.id}`}
@@ -64,7 +64,7 @@ export default function DemostracionPage() {
         </nav>
 
         <div className="mx-auto max-w-4xl space-y-14 px-4 py-14 sm:px-6 lg:max-w-5xl lg:px-8">
-          {demoVideos.map((item, index) => (
+          {demoVideosDemostracion.map((item, index) => (
             <article
               key={item.id}
               id={`video-${item.id}`}
