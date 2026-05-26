@@ -1,12 +1,13 @@
 'use client';
 
 import { useSearchParams, useRouter } from 'next/navigation';
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import QRCode from '@/components/QRCode';
 import PlanPurchaseAuthGate from '@/components/PlanPurchaseAuthGate';
 import { getDemoSession } from '@/lib/demo-session';
+import { activateUserPlan } from '@/lib/user-plan';
 import {
   checkoutSummaryFeatures,
   getMarketingPlan,
@@ -55,10 +56,19 @@ export default function CheckoutClient() {
   }, [planSlug, paymentState.step, paymentState.transactionId]);
 
   const [checkoutAllowed, setCheckoutAllowed] = useState<boolean | undefined>(undefined);
+  const planActivatedRef = useRef(false);
 
   useEffect(() => {
     setCheckoutAllowed(getDemoSession() !== null);
   }, []);
+
+  useEffect(() => {
+    if (paymentState.step !== 'success' || planActivatedRef.current) return;
+    const session = getDemoSession();
+    if (!session) return;
+    planActivatedRef.current = true;
+    activateUserPlan(session.email, planSlug);
+  }, [paymentState.step, planSlug]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

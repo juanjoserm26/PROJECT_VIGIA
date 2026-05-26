@@ -192,7 +192,7 @@ export default function GoogleSignInPanel({ onSuccess, onCancel, compact }: Goog
             if (!tokenRes.ok || !data.ok) {
               if ('error' in data && data.error === 'server_config') {
                 setBannerError(
-                  'Falta configurar Google en el servidor (GOOGLE_CLIENT_SECRET en Vercel). Mientras tanto usa correo y contraseña PROJECT VIGIA arriba.',
+                  'Falta el secreto de Google en el servidor (GOOGLE_CLIENT_SECRET). En local: cópialo desde Google Cloud Console a app/.env.local (node scripts/setup-google-local.mjs --secret=…). En Vercel: Settings → Environment Variables y vuelve a pegar el secreto si quedó vacío. Mientras tanto usa correo y contraseña PROJECT VIGIA arriba.',
                 );
                 return;
               }

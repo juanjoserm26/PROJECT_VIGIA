@@ -19,7 +19,7 @@ async function getCanvasImageMeta(): Promise<{ width: number; height: number }> 
   return fallback;
 }
 
-const CANVAS_ASSET_VERSION = 'img-v3-html-readable-20260516';
+const CANVAS_ASSET_VERSION = 'canvas-prof-final-20260526';
 
 export default async function BusinessPlan() {
   const { width: imgWidth, height: imgHeight } = await getCanvasImageMeta();

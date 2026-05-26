@@ -7,6 +7,7 @@ import GoogleSignInPanel, { buildSessionForUser } from '@/components/GoogleSignI
 import PasswordField, { authInputClass } from '@/components/PasswordField';
 import { authenticateUserAsync } from '@/lib/user-store';
 import { setDemoSession } from '@/lib/demo-session';
+import { syncUserPlanOnLogin } from '@/lib/user-plan';
 import { getSafeInternalRedirect } from '@/lib/auth-redirect';
 
 export default function LoginForm() {
@@ -29,6 +30,7 @@ export default function LoginForm() {
   function completeLogin(user: Parameters<typeof buildSessionForUser>[0]) {
     const session = buildSessionForUser(user, false);
     setDemoSession(session);
+    syncUserPlanOnLogin(session.email);
     router.push(redirectAfter);
     router.refresh();
   }
@@ -106,6 +108,7 @@ export default function LoginForm() {
       <GoogleSignInPanel
         onSuccess={(session) => {
           setDemoSession(session);
+          syncUserPlanOnLogin(session.email);
           router.push(redirectAfter);
           router.refresh();
         }}

@@ -52,3 +52,4 @@ desktop.ini
 
 # Python venv local (no subir; regenerar con pip install -r requirements.txt)
 prototipo/.venv/
+.env*

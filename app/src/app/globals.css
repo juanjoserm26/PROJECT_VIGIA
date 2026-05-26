@@ -163,6 +163,34 @@ body {
   animation: pqrs-panel-in 0.35s cubic-bezier(0.22, 1, 0.36, 1) forwards;
 }
 
+/* Campana de alertas de cámaras — una sola vibración por notificación nueva */
+@keyframes vigia-bell-shake {
+  0%,
+  100% {
+    transform: rotate(0);
+  }
+  15% {
+    transform: rotate(-12deg);
+  }
+  30% {
+    transform: rotate(10deg);
+  }
+  45% {
+    transform: rotate(-8deg);
+  }
+  60% {
+    transform: rotate(6deg);
+  }
+  75% {
+    transform: rotate(-4deg);
+  }
+}
+
+.vigia-bell-shake-once {
+  animation: vigia-bell-shake 0.65s ease-in-out 1;
+  transform-origin: top center;
+}
+
 /* Reduce motion for users who prefer it */
 @media (prefers-reduced-motion: reduce) {
   *,
