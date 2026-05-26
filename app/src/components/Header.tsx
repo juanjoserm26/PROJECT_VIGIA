@@ -6,8 +6,7 @@ import { useCallback, useEffect, useId, useState } from 'react';
 import type { FocusEvent } from 'react';
 import Logo from './Logo';
 import PqrsDialog from './PqrsDialog';
-import PqrsNotificationsBell from './PqrsNotificationsBell';
-import CameraAlertsBell from './CameraAlertsBell';
+import NotificationsBell from './NotificationsBell';
 import { clearDemoSession, DEMO_SESSION_KEY, getDemoSession, type DemoSession, VIGIA_SESSION_CHANGED_EVENT } from '@/lib/demo-session';
 
 /** Puerta entreabierta + salida (línea fina, para “cerrar sesión”) */
@@ -146,12 +145,7 @@ export default function Header() {
             <Link href="/portal-cliente" className="hover:text-white transition shrink-0">
               Portal cliente
             </Link>
-            {session ? (
-              <>
-                <CameraAlertsBell />
-                <PqrsNotificationsBell />
-              </>
-            ) : null}
+            {session ? <NotificationsBell /> : null}
           </div>
         </div>
       </div>
@@ -394,19 +388,11 @@ export default function Header() {
               Portal cliente
             </Link>
             {session ? (
-              <div className="mx-3 my-2 space-y-3 rounded-lg bg-slate-900 px-3 py-2">
-                <div>
-                  <p className="mb-2 text-xs font-semibold uppercase tracking-wider text-slate-400">
-                    Alertas de monitoreo
-                  </p>
-                  <CameraAlertsBell className="inline-block" />
-                </div>
-                <div>
-                  <p className="mb-2 text-xs font-semibold uppercase tracking-wider text-slate-400">
-                    Notificaciones PQRS
-                  </p>
-                  <PqrsNotificationsBell className="inline-block" />
-                </div>
+              <div className="mx-3 my-2 rounded-lg bg-slate-900 px-3 py-2">
+                <p className="mb-2 text-xs font-semibold uppercase tracking-wider text-slate-400">
+                  Notificaciones
+                </p>
+                <NotificationsBell className="inline-block" />
               </div>
             ) : null}
           </nav>
