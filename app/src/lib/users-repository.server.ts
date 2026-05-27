@@ -1,5 +1,6 @@
 import { promises as fs } from 'fs';
 import path from 'path';
+import { getServerDataDir } from '@/lib/server-data-path';
 import type {
   DocumentType,
   PublicStoredUser,
@@ -13,7 +14,7 @@ import {
   validatePassword,
 } from '@/lib/user-store';
 
-const DATA_DIR = path.join(process.cwd(), 'data');
+const DATA_DIR = getServerDataDir();
 const USERS_FILE = path.join(DATA_DIR, 'vigia-users.json');
 
 export function toPublicUser(user: StoredUser): PublicStoredUser {

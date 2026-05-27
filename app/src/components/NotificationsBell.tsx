@@ -128,11 +128,14 @@ export default function NotificationsBell({ className = '' }: NotificationsBellP
   useEffect(() => {
     void refreshAll();
     const onCamera = () => refreshCamera();
-    const onPqrs = () => void refreshPqrs();
+    const onPqrs = () => {
+      void refreshPqrs();
+      window.setTimeout(() => void refreshPqrs(), 800);
+    };
     window.addEventListener(CAMERA_ALERTS_UPDATED_EVENT, onCamera);
     window.addEventListener(USER_PLAN_CHANGED_EVENT, onCamera);
     window.addEventListener(PQRS_UPDATED_EVENT, onPqrs);
-    const interval = window.setInterval(() => void refreshPqrs(), 45000);
+    const interval = window.setInterval(() => void refreshPqrs(), 4000);
     return () => {
       window.removeEventListener(CAMERA_ALERTS_UPDATED_EVENT, onCamera);
       window.removeEventListener(USER_PLAN_CHANGED_EVENT, onCamera);
@@ -357,11 +360,18 @@ export default function NotificationsBell({ className = '' }: NotificationsBellP
                                   }`}
                                 >
                                   <div className="flex items-start justify-between gap-2">
-                                    <span
-                                      className={`inline-flex rounded-md border px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide ${PQRS_TYPE_STYLES[item.tipo]}`}
-                                    >
-                                      {PQRS_TYPE_LABELS[item.tipo]}
-                                    </span>
+                                    <div className="flex flex-wrap items-center gap-1.5">
+                                      {!item.read ? (
+                                        <span className="rounded bg-blue-500/30 px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wider text-blue-200">
+                                          Nueva
+                                        </span>
+                                      ) : null}
+                                      <span
+                                        className={`inline-flex rounded-md border px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide ${PQRS_TYPE_STYLES[item.tipo]}`}
+                                      >
+                                        {PQRS_TYPE_LABELS[item.tipo]}
+                                      </span>
+                                    </div>
                                     <time className="shrink-0 text-[10px] text-slate-500">
                                       {formatWhen(item.receivedAt)}
                                     </time>

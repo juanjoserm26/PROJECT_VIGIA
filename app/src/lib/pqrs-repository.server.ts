@@ -1,8 +1,9 @@
 import { promises as fs } from 'fs';
 import path from 'path';
+import { getServerDataDir } from '@/lib/server-data-path';
 import type { PqrsSubmission, PqrsType } from '@/lib/pqrs-types';
 
-const DATA_DIR = path.join(process.cwd(), 'data');
+const DATA_DIR = getServerDataDir();
 const PQRS_FILE = path.join(DATA_DIR, 'pqrs-submissions.json');
 
 const TIPOS = new Set<PqrsType>(['peticion', 'queja', 'reclamo', 'sugerencia']);

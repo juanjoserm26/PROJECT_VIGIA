@@ -20,7 +20,14 @@ export async function POST(req: Request) {
       }, { status: 401 });
     }
     return NextResponse.json({ ok: true as const, user: toPublicUser(result.user) });
-  } catch {
-    return NextResponse.json({ ok: false as const, error: 'internal' }, { status: 500 });
+  } catch (e) {
+    console.error('Login error:', e);
+    return NextResponse.json(
+      {
+        ok: false as const,
+        error: 'No pudimos verificar tu cuenta. Intenta de nuevo en unos segundos.',
+      },
+      { status: 500 },
+    );
   }
 }

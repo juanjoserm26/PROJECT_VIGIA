@@ -15,6 +15,7 @@ export default function PqrsDialog({ open, onClose }: PqrsDialogProps) {
   const [telefono, setTelefono] = useState('');
   const [mensaje, setMensaje] = useState('');
   const [status, setStatus] = useState<'idle' | 'sending' | 'sent' | 'error'>('idle');
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   useEffect(() => {
     if (!open) return;
@@ -28,6 +29,7 @@ export default function PqrsDialog({ open, onClose }: PqrsDialogProps) {
   useEffect(() => {
     if (!open) {
       setStatus('idle');
+      setErrorMessage(null);
     }
   }, [open]);
 
@@ -38,6 +40,7 @@ export default function PqrsDialog({ open, onClose }: PqrsDialogProps) {
     if (!nombre.trim() || !email.trim() || !mensaje.trim()) return;
 
     setStatus('sending');
+    setErrorMessage(null);
     try {
       const res = await fetch('/api/pqrs', {
         method: 'POST',
@@ -50,7 +53,13 @@ export default function PqrsDialog({ open, onClose }: PqrsDialogProps) {
           mensaje: mensaje.trim(),
         }),
       });
-      if (res.ok) {
+      const data = (await res.json()) as {
+        ok?: boolean;
+        success?: boolean;
+        error?: string;
+      };
+
+      if (res.ok && (data.ok === true || data.success === true)) {
         setStatus('sent');
         setNombre('');
         setEmail('');
@@ -58,10 +67,17 @@ export default function PqrsDialog({ open, onClose }: PqrsDialogProps) {
         setMensaje('');
         setTipo('peticion');
         window.dispatchEvent(new CustomEvent(PQRS_UPDATED_EVENT));
-      } else {
-        setStatus('error');
+        return;
       }
+
+      setErrorMessage(
+        typeof data.error === 'string' && data.error
+          ? data.error
+          : 'No pudimos enviar el formulario. Intenta de nuevo.',
+      );
+      setStatus('error');
     } catch {
+      setErrorMessage('Error de conexión. Comprueba tu internet e intenta de nuevo.');
       setStatus('error');
     }
   };
@@ -112,13 +128,14 @@ export default function PqrsDialog({ open, onClose }: PqrsDialogProps) {
 
           <div className="relative px-6 pb-8 pt-2">
             {status === 'sent' ? (
-              <div className="rounded-xl bg-white/10 border border-white/15 p-6 text-center backdrop-blur-sm">
-                <div className="mx-auto mb-3 flex h-14 w-14 items-center justify-center rounded-full bg-emerald-500/20 text-2xl">
+              <div className="rounded-xl bg-white/10 border border-emerald-400/30 p-6 text-center backdrop-blur-sm">
+                <div className="mx-auto mb-3 flex h-14 w-14 items-center justify-center rounded-full bg-emerald-500/20 text-2xl text-emerald-300">
                   ✓
                 </div>
-                <p className="text-lg font-semibold">Recibimos tu PQRS</p>
+                <p className="text-lg font-semibold text-emerald-100">¡PQRS enviada con éxito!</p>
                 <p className="text-sm text-slate-300 mt-2">
-                  Te responderemos al correo que indicaste lo antes posible.
+                  Tu solicitud quedó registrada. Si tienes sesión iniciada, verás la notificación en la campana.
+                  Te responderemos al correo indicado lo antes posible.
                 </p>
                 <button
                   type="button"
@@ -190,8 +207,9 @@ export default function PqrsDialog({ open, onClose }: PqrsDialogProps) {
                 </div>
 
                 {status === 'error' && (
-                  <p className="text-sm text-rose-300">
-                    No pudimos enviar el formulario. Intenta de nuevo o escríbenos a contacto@projectvigia.co
+                  <p className="text-sm text-rose-300" role="alert">
+                    {errorMessage ??
+                      'No pudimos enviar el formulario. Intenta de nuevo o escríbenos a contacto@projectvigia.co'}
                   </p>
                 )}
 

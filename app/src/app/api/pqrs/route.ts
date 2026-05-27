@@ -74,8 +74,10 @@ export async function POST(request: Request) {
 
     const items = await readPqrsServer();
     return NextResponse.json({
+      ok: true as const,
       success: true,
       id: entry.id,
+      entry,
       unreadCount: countUnreadPqrs(items),
     });
   } catch (e) {

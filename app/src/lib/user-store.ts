@@ -275,24 +275,32 @@ export async function authenticateUserAsync(
   email: string,
   password: string,
 ): Promise<{ ok: true; user: StoredUser } | { ok: false; error: string }> {
+  const localResult = authenticateUser(email, password);
+
   try {
     const res = await fetch('/api/users/login', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ email, password }),
     });
-    const data = await res.json();
-    if (data.ok && data.user) {
-      const user = cacheUserFromPublic(data.user as PublicStoredUser, password);
+    const data = (await res.json()) as
+      | { ok: true; user: PublicStoredUser }
+      | { ok: false; error?: string };
+
+    if (res.ok && data.ok && 'user' in data && data.user) {
+      const user = cacheUserFromPublic(data.user, password);
       return { ok: true, user };
     }
-    if (!data.ok && data.error) {
+
+    if (res.status === 401 && !data.ok && typeof data.error === 'string') {
+      if (localResult.ok) return localResult;
       return { ok: false, error: data.error };
     }
   } catch {
-    /* fallback local */
+    /* servidor no disponible */
   }
-  return authenticateUser(email, password);
+
+  return localResult;
 }
 
 export function authenticateUser(
