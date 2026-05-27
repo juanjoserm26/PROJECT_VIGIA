@@ -64,7 +64,7 @@ export default function Header() {
   const navScrollSavedRef = useRef<number | null>(null);
   const servicesNavItemRef = useRef<HTMLLIElement>(null);
   const servicesAnchorRef = useRef<HTMLButtonElement>(null);
-  const servicesCloseTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const servicesCloseTimerRef = useRef<number | null>(null);
   const servicesMenuPanelId = useId();
 
   const updateNavScrollState = useCallback(() => {
