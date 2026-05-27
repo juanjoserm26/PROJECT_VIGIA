@@ -8,7 +8,6 @@ import {
   clearCameraAlerts,
   deleteCameraAlert,
   getCameraAlertsForEmail,
-  getUnreadCameraAlertCount,
   markCameraAlertsRead,
   runPendingAlertEffects,
   type CameraAlert,
@@ -18,7 +17,6 @@ import {
   clearPlanNotifications,
   deletePlanNotification,
   getPlanNotificationsForEmail,
-  getUnreadPlanNotificationCount,
   markPlanNotificationsRead,
   PLAN_NOTIFICATIONS_UPDATED_EVENT,
   type PlanNotification,
@@ -30,6 +28,7 @@ import {
   type PqrsSubmission,
   type PqrsType,
 } from '@/lib/pqrs-types';
+import { isNotificationVisibleAfterClear, markInboxCleared } from '@/lib/notifications-inbox';
 import { USER_PLAN_CHANGED_EVENT } from '@/lib/user-plan';
 
 const PQRS_TYPE_STYLES: Record<PqrsType, string> = {
@@ -118,8 +117,11 @@ export default function NotificationsBell({ className = '' }: NotificationsBellP
       return;
     }
     const email = session.email;
-    setCameraItems(getCameraAlertsForEmail(email));
-    setCameraUnread(getUnreadCameraAlertCount(email));
+    const items = getCameraAlertsForEmail(email).filter((i) =>
+      isNotificationVisibleAfterClear(email, i.createdAt),
+    );
+    setCameraItems(items);
+    setCameraUnread(items.filter((i) => !i.read).length);
     if (runPendingAlertEffects(email)) {
       setShake(true);
       window.setTimeout(() => setShake(false), 700);
@@ -133,8 +135,11 @@ export default function NotificationsBell({ className = '' }: NotificationsBellP
       setPlanUnread(0);
       return;
     }
-    setPlanItems(getPlanNotificationsForEmail(session.email));
-    setPlanUnread(getUnreadPlanNotificationCount(session.email));
+    const items = getPlanNotificationsForEmail(session.email).filter((i) =>
+      isNotificationVisibleAfterClear(session.email, i.createdAt),
+    );
+    setPlanItems(items);
+    setPlanUnread(items.filter((i) => !i.read).length);
   }, []);
 
   const refreshPqrs = useCallback(async () => {
@@ -147,8 +152,13 @@ export default function NotificationsBell({ className = '' }: NotificationsBellP
         unreadCount?: number;
       };
       if (data.ok && data.items) {
-        setPqrsItems(data.items);
-        setPqrsUnread(data.unreadCount ?? 0);
+        const session = getDemoSession();
+        const email = session?.email ?? '';
+        const filtered = email
+          ? data.items.filter((i) => isNotificationVisibleAfterClear(email, i.receivedAt))
+          : data.items;
+        setPqrsItems(filtered);
+        setPqrsUnread(filtered.filter((i) => !i.read).length);
       }
     } catch {
       /* ignore */
@@ -219,6 +229,7 @@ export default function NotificationsBell({ className = '' }: NotificationsBellP
     const email = session.email;
     clearCameraAlerts(email);
     clearPlanNotifications(email);
+    markInboxCleared(email);
     try {
       await fetch('/api/pqrs', {
         method: 'POST',
@@ -229,6 +240,12 @@ export default function NotificationsBell({ className = '' }: NotificationsBellP
       /* ignore */
     }
     setDeleteMode(null);
+    setPqrsItems([]);
+    setPqrsUnread(0);
+    setCameraItems([]);
+    setCameraUnread(0);
+    setPlanItems([]);
+    setPlanUnread(0);
     setExpandedCameraId(null);
     setExpandedPlanId(null);
     setExpandedPqrsId(null);
@@ -313,7 +330,7 @@ export default function NotificationsBell({ className = '' }: NotificationsBellP
   const visiblePlans = showAllPlanes ? planItems : planItems.slice(0, SECTION_PREVIEW);
   const visiblePqrs = showAllPqrs ? pqrsItems : pqrsItems.slice(0, SECTION_PREVIEW);
   const hasAny = cameraItems.length > 0 || planItems.length > 0 || pqrsItems.length > 0;
-  const badge = totalUnread > 99 ? '99+' : String(totalUnread);
+  const hasUnread = totalUnread > 0;
 
   function SectionDeleteToggle({
     section,
@@ -369,10 +386,11 @@ export default function NotificationsBell({ className = '' }: NotificationsBellP
         aria-label={totalUnread > 0 ? `Notificaciones, ${totalUnread} sin leer` : 'Notificaciones'}
       >
         <BellIcon className="h-[18px] w-[18px]" />
-        {totalUnread > 0 ? (
-          <span className="absolute -right-0.5 -top-0.5 flex h-[18px] min-w-[18px] items-center justify-center rounded-full bg-red-600 px-1 text-[10px] font-bold leading-none text-white ring-2 ring-slate-900">
-            {badge}
-          </span>
+        {hasUnread ? (
+          <span
+            className="absolute right-0.5 top-0.5 h-2.5 w-2.5 rounded-full bg-red-500 ring-2 ring-slate-900 vigia-blink"
+            aria-hidden
+          />
         ) : null}
       </button>
 
@@ -417,7 +435,7 @@ export default function NotificationsBell({ className = '' }: NotificationsBellP
                 <p className="px-4 py-10 text-center text-sm text-slate-400">No tienes notificaciones nuevas.</p>
               ) : (
                 <>
-                  {/* Planes */}
+                  {planItems.length > 0 ? (
                   <section className="border-b border-white/10">
                     <div className="sticky top-0 z-10 flex items-center justify-between gap-2 bg-slate-900/95 px-4 py-2 backdrop-blur-sm">
                       <div>
@@ -426,9 +444,6 @@ export default function NotificationsBell({ className = '' }: NotificationsBellP
                       </div>
                       {planItems.length > 0 ? <SectionDeleteToggle section="planes" label="planes" /> : null}
                     </div>
-                    {planItems.length === 0 ? (
-                      <p className="px-4 py-4 text-xs text-slate-500">Sin notificaciones de planes.</p>
-                    ) : (
                       <>
                         <ul className="divide-y divide-white/5">
                           {visiblePlans.map((item) => {
@@ -516,10 +531,10 @@ export default function NotificationsBell({ className = '' }: NotificationsBellP
                           </button>
                         ) : null}
                       </>
-                    )}
                   </section>
+                  ) : null}
 
-                  {/* Monitoreo */}
+                  {cameraItems.length > 0 ? (
                   <section className="border-b border-white/10">
                     <div className="sticky top-0 z-10 flex items-center justify-between gap-2 bg-slate-900/95 px-4 py-2 backdrop-blur-sm">
                       <div>
@@ -530,9 +545,6 @@ export default function NotificationsBell({ className = '' }: NotificationsBellP
                         <SectionDeleteToggle section="monitoreo" label="monitoreo" />
                       ) : null}
                     </div>
-                    {cameraItems.length === 0 ? (
-                      <p className="px-4 py-4 text-xs text-slate-500">Sin alertas de cámaras.</p>
-                    ) : (
                       <>
                         <ul className="divide-y divide-white/5">
                           {visibleCamera.map((item) => {
@@ -591,10 +603,10 @@ export default function NotificationsBell({ className = '' }: NotificationsBellP
                           </button>
                         ) : null}
                       </>
-                    )}
                   </section>
+                  ) : null}
 
-                  {/* PQRS */}
+                  {pqrsItems.length > 0 ? (
                   <section>
                     <div className="sticky top-0 z-10 flex items-center justify-between gap-2 bg-slate-900/95 px-4 py-2 backdrop-blur-sm">
                       <div>
@@ -604,9 +616,6 @@ export default function NotificationsBell({ className = '' }: NotificationsBellP
                       </div>
                       {pqrsItems.length > 0 ? <SectionDeleteToggle section="pqrs" label="PQRS" /> : null}
                     </div>
-                    {pqrsItems.length === 0 ? (
-                      <p className="px-4 py-4 text-xs text-slate-500">Sin PQRS registradas.</p>
-                    ) : (
                       <>
                         <ul className="divide-y divide-white/5">
                           {visiblePqrs.map((item) => {
@@ -670,8 +679,8 @@ export default function NotificationsBell({ className = '' }: NotificationsBellP
                           </button>
                         ) : null}
                       </>
-                    )}
                   </section>
+                  ) : null}
                 </>
               )}
             </div>

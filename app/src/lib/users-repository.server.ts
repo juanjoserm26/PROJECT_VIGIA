@@ -129,6 +129,32 @@ export async function registerUserServer(
   return { ok: true, user };
 }
 
+export async function updateUserPasswordServer(
+  email: string,
+  newPassword: string,
+): Promise<{ ok: true } | { ok: false; error: string }> {
+  const key = normalizeEmail(email);
+  if (!key) return { ok: false, error: 'Ingresa tu correo electrónico.' };
+  const pwdError = validatePassword(newPassword);
+  if (pwdError) return { ok: false, error: pwdError };
+
+  const users = await readUsersServer();
+  const idx = users.findIndex((u) => u.email === key);
+  if (idx < 0) {
+    return { ok: false, error: 'No hay cuenta con este correo. Crea una cuenta primero.' };
+  }
+  if (users[idx]!.authProvider === 'google') {
+    return {
+      ok: false,
+      error: 'Esta cuenta usa Google. Inicia sesión con el botón de Google.',
+    };
+  }
+
+  users[idx] = { ...users[idx]!, password: newPassword };
+  await writeUsersServer(users);
+  return { ok: true };
+}
+
 export async function authenticateUserServer(
   email: string,
   password: string,
@@ -136,11 +162,11 @@ export async function authenticateUserServer(
   const key = normalizeEmail(email);
   if (!key) return { ok: false, error: 'Ingresa tu correo electrónico.' };
   const user = await findUserByEmailServer(key);
-  if (!user) {
-    return { ok: false, error: 'No hay cuenta con este correo. Crea una cuenta primero.' };
-  }
-  if (user.password !== password) {
-    return { ok: false, error: 'Contraseña incorrecta. Verifica e intenta de nuevo.' };
+  if (!user || user.password !== password) {
+    return {
+      ok: false,
+      error: 'Correo y/o contraseña incorrectos. Verifica los datos e intenta de nuevo.',
+    };
   }
   return { ok: true, user };
 }

@@ -350,13 +350,22 @@ export default function CheckoutClient() {
                       </p>
                     </div>
 
-                    <button
-                      type="button"
-                      onClick={() => router.push('/')}
-                      className="w-full rounded-xl bg-blue-600 py-3.5 text-sm font-semibold text-white shadow-lg shadow-blue-600/25 transition hover:bg-blue-700"
-                    >
-                      Volver al inicio
-                    </button>
+                    <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                      <button
+                        type="button"
+                        onClick={() => router.push('/')}
+                        className="w-full rounded-xl border border-slate-200 bg-white py-3.5 text-sm font-semibold text-slate-800 shadow-sm transition hover:bg-slate-50"
+                      >
+                        Volver al inicio
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => router.push('/plans')}
+                        className="w-full rounded-xl bg-blue-600 py-3.5 text-sm font-semibold text-white shadow-lg shadow-blue-600/25 transition hover:bg-blue-700"
+                      >
+                        Adquiere otro plan
+                      </button>
+                    </div>
                   </div>
                 </div>
               )}

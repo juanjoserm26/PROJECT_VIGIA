@@ -1,3 +1,5 @@
+import { LOGIN_INVALID_CREDENTIALS } from '@/lib/auth-messages';
+
 /**
  * Cuentas de demostración en localStorage (mismo navegador).
  * En producción esto iría a un backend con hash de contraseñas.
@@ -271,12 +273,52 @@ export async function registerUserAsync(
   return registerUser(input);
 }
 
+export async function resetPasswordAsync(
+  email: string,
+  newPassword: string,
+): Promise<{ ok: true } | { ok: false; error: string }> {
+  const key = normalizeEmail(email);
+  if (!key) return { ok: false, error: 'Ingresa tu correo electrónico.' };
+
+  try {
+    const res = await fetch('/api/users/reset-password', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email: key, password: newPassword }),
+    });
+    const data = (await res.json()) as { ok?: boolean; error?: string };
+    if (res.ok && data.ok) {
+      const existing = findUserByEmail(key);
+      if (existing) {
+        upsertUserInBrowserCache({ ...existing, password: newPassword });
+      } else {
+        const remote = await fetchUserFromServer(key);
+        if (remote) upsertUserInBrowserCache({ ...remote, password: newPassword });
+      }
+      return { ok: true };
+    }
+    if (!data.ok && data.error) return { ok: false, error: data.error };
+  } catch {
+    /* fallback local */
+  }
+
+  const user = findUserByEmail(key);
+  if (!user) {
+    return { ok: false, error: 'No hay cuenta con este correo. Crea una cuenta primero.' };
+  }
+  if (user.authProvider === 'google') {
+    return { ok: false, error: 'Esta cuenta usa Google. Inicia sesión con el botón de Google.' };
+  }
+  const pwdError = validatePassword(newPassword);
+  if (pwdError) return { ok: false, error: pwdError };
+  upsertUserInBrowserCache({ ...user, password: newPassword });
+  return { ok: true };
+}
+
 export async function authenticateUserAsync(
   email: string,
   password: string,
 ): Promise<{ ok: true; user: StoredUser } | { ok: false; error: string }> {
-  const key = normalizeEmail(email);
-  const localUser = findUserByEmail(key);
   const localResult = authenticateUser(email, password);
 
   try {
@@ -294,31 +336,17 @@ export async function authenticateUserAsync(
       return { ok: true, user };
     }
 
-    if (res.status === 401 && !data.ok && typeof data.error === 'string') {
+    if (res.status === 401) {
       if (localResult.ok) return localResult;
-
-      if (localUser) {
-        return { ok: false, error: 'Contraseña incorrecta. Verifica e intenta de nuevo.' };
-      }
-
-      try {
-        const lookup = await fetch(`/api/users?email=${encodeURIComponent(key)}`);
-        if (lookup.ok) {
-          const lookupData = (await lookup.json()) as { ok?: boolean; user?: PublicStoredUser };
-          if (lookupData.ok && lookupData.user) {
-            return { ok: false, error: 'Contraseña incorrecta. Verifica e intenta de nuevo.' };
-          }
-        }
-      } catch {
-        /* ignore */
-      }
-
-      return { ok: false, error: data.error };
+      return { ok: false, error: LOGIN_INVALID_CREDENTIALS };
     }
   } catch {
     /* servidor no disponible */
   }
 
+  if (!localResult.ok) {
+    return { ok: false, error: LOGIN_INVALID_CREDENTIALS };
+  }
   return localResult;
 }
 
@@ -330,11 +358,8 @@ export function authenticateUser(
   if (!key) return { ok: false, error: 'Ingresa tu correo electrónico.' };
 
   const user = findUserByEmail(key);
-  if (!user) {
-    return { ok: false, error: 'No hay cuenta con este correo. Crea una cuenta primero.' };
-  }
-  if (user.password !== password) {
-    return { ok: false, error: 'Contraseña incorrecta. Verifica e intenta de nuevo.' };
+  if (!user || user.password !== password) {
+    return { ok: false, error: LOGIN_INVALID_CREDENTIALS };
   }
   return { ok: true, user };
 }

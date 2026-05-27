@@ -5,7 +5,7 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { useMemo, useState } from 'react';
 import GoogleSignInPanel, { buildSessionForUser } from '@/components/GoogleSignInPanel';
 import PasswordField, { authInputClass } from '@/components/PasswordField';
-import { authenticateUserAsync } from '@/lib/user-store';
+import { authenticateUserAsync, resetPasswordAsync } from '@/lib/user-store';
 import { setDemoSession } from '@/lib/demo-session';
 import { syncUserPlanOnLogin } from '@/lib/user-plan';
 import { getSafeInternalRedirect } from '@/lib/auth-redirect';
@@ -25,7 +25,11 @@ export default function LoginForm() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState<string | null>(null);
+  const [success, setSuccess] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
+  const [showRecover, setShowRecover] = useState(false);
+  const [newPassword, setNewPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
 
   function completeLogin(user: Parameters<typeof buildSessionForUser>[0]) {
     const session = buildSessionForUser(user, false);
@@ -48,12 +52,39 @@ export default function LoginForm() {
     completeLogin(result.user);
   }
 
+  async function onRecoverSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    setError(null);
+    setSuccess(null);
+    if (newPassword !== confirmPassword) {
+      setError('Las contraseñas no coinciden.');
+      return;
+    }
+    setBusy(true);
+    const result = await resetPasswordAsync(email, newPassword);
+    setBusy(false);
+    if (!result.ok) {
+      setError(result.error);
+      return;
+    }
+    setSuccess('Contraseña actualizada. Ya puedes iniciar sesión con tu nueva clave.');
+    setShowRecover(false);
+    setPassword('');
+    setNewPassword('');
+    setConfirmPassword('');
+  }
+
   return (
     <div className="w-full max-w-md rounded-2xl border border-white/20 bg-white/95 p-8 shadow-2xl shadow-black/40 ring-1 ring-white/30 backdrop-blur-md">
       <form onSubmit={onSubmit} className="space-y-5">
         {error ? (
           <p className="rounded-md bg-red-50 px-3 py-2 text-sm text-red-800" role="alert">
             {error}
+          </p>
+        ) : null}
+        {success ? (
+          <p className="rounded-md bg-emerald-50 px-3 py-2 text-sm text-emerald-800" role="status">
+            {success}
           </p>
         ) : null}
         <div>
@@ -88,7 +119,72 @@ export default function LoginForm() {
         >
           Iniciar sesión
         </button>
+
+        <p className="text-center">
+          <button
+            type="button"
+            onClick={() => {
+              setShowRecover((v) => !v);
+              setError(null);
+              setSuccess(null);
+            }}
+            className="text-sm font-medium text-blue-600 hover:text-blue-800 hover:underline"
+          >
+            ¿Olvidaste tu contraseña? Recuperar acceso
+          </button>
+        </p>
       </form>
+
+      {showRecover ? (
+        <form
+          onSubmit={onRecoverSubmit}
+          className="mt-6 space-y-4 rounded-xl border border-blue-100 bg-blue-50/80 p-4"
+        >
+          <p className="text-sm font-semibold text-slate-800">Recuperar contraseña</p>
+          <p className="text-xs text-slate-600">
+            Ingresa el correo de tu cuenta PROJECT VIGIA y define una contraseña nueva (mín. 10 caracteres y un
+            carácter especial).
+          </p>
+          <div>
+            <label htmlFor="recover-email" className="mb-1 block text-xs font-semibold text-slate-700">
+              Correo
+            </label>
+            <input
+              id="recover-email"
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              className={authInputClass}
+              required
+            />
+          </div>
+          <PasswordField
+            id="recover-password"
+            label="Nueva contraseña"
+            value={newPassword}
+            onChange={setNewPassword}
+            autoComplete="new-password"
+            minLength={10}
+            placeholder="Nueva contraseña"
+          />
+          <PasswordField
+            id="recover-password-confirm"
+            label="Confirmar contraseña"
+            value={confirmPassword}
+            onChange={setConfirmPassword}
+            autoComplete="new-password"
+            minLength={10}
+            placeholder="Repite la contraseña"
+          />
+          <button
+            type="submit"
+            disabled={busy}
+            className="w-full rounded-lg bg-slate-800 py-3 text-sm font-semibold text-white hover:bg-slate-900 disabled:opacity-60"
+          >
+            Guardar nueva contraseña
+          </button>
+        </form>
+      ) : null}
 
       <p className="mt-6 text-center text-sm">
         <Link href={crearCuentaHref} className="font-semibold text-blue-600 hover:text-blue-800 hover:underline">

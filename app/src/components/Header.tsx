@@ -86,6 +86,7 @@ export default function Header() {
     { label: 'Contacto', href: '/#contact' },
     { label: 'Demostración', href: '/demostracion' },
     { label: 'Mis cámaras', href: '/monitoreo' },
+    { label: 'Mis planes', href: '/mis-planes' },
   ];
 
   const serviceLinks = [
