@@ -346,7 +346,7 @@ export default function NotificationsBell({ className = '' }: NotificationsBellP
         onClick={() => toggleDeleteMode(section)}
         className={`rounded-md p-1.5 transition ${
           active
-            ? 'bg-rose-500/25 text-rose-200 ring-1 ring-rose-400/40'
+            ? 'text-rose-200 ring-1 ring-rose-400/35'
             : 'text-slate-400 hover:bg-white/10 hover:text-white'
         }`}
         aria-label={active ? `Salir de borrar ${label}` : `Borrar notificaciones de ${label}`}
@@ -365,7 +365,7 @@ export default function NotificationsBell({ className = '' }: NotificationsBellP
           e.stopPropagation();
           onDelete();
         }}
-        className="absolute right-2 top-2 z-10 flex h-7 w-7 items-center justify-center rounded-full bg-rose-600/90 text-white shadow-lg opacity-0 transition group-hover:opacity-100 hover:bg-rose-500"
+        className="absolute right-2 top-2 z-10 hidden h-6 w-6 items-center justify-center rounded-md text-slate-500 transition hover:bg-white/10 hover:text-rose-200 group-hover:flex"
         aria-label="Eliminar notificación"
       >
         <CloseIcon className="h-3.5 w-3.5" />

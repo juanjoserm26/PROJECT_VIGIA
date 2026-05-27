@@ -2,14 +2,33 @@
 
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
-import { useCallback, useEffect, useId, useState } from 'react';
-import type { FocusEvent } from 'react';
+import { useCallback, useEffect, useId, useLayoutEffect, useRef, useState } from 'react';
+import { createPortal } from 'react-dom';
 import Logo from './Logo';
 import PqrsDialog from './PqrsDialog';
 import NotificationsBell from './NotificationsBell';
 import { clearDemoSession, DEMO_SESSION_KEY, getDemoSession, type DemoSession, VIGIA_SESSION_CHANGED_EVENT } from '@/lib/demo-session';
 
 /** Puerta entreabierta + salida (línea fina, para “cerrar sesión”) */
+function NavChevronIcon({ direction, className }: { direction: 'left' | 'right'; className?: string }) {
+  return (
+    <svg
+      className={className}
+      fill="none"
+      stroke="currentColor"
+      viewBox="0 0 24 24"
+      aria-hidden
+    >
+      <path
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        strokeWidth={2}
+        d={direction === 'left' ? 'M15 19l-7-7 7-7' : 'M9 5l7 7-7 7'}
+      />
+    </svg>
+  );
+}
+
 function DoorExitIcon({ className }: { className?: string }) {
   return (
     <svg
@@ -36,12 +55,192 @@ export default function Header() {
   const [pqrsOpen, setPqrsOpen] = useState(false);
   const [session, setSession] = useState<DemoSession | null>(null);
   const [servicesMenuOpen, setServicesMenuOpen] = useState(false);
+  const [activeNavHref, setActiveNavHref] = useState('/');
+  const [navOverflow, setNavOverflow] = useState(false);
+  const [canScrollLeft, setCanScrollLeft] = useState(false);
+  const [canScrollRight, setCanScrollRight] = useState(false);
+  const [servicesMenuPos, setServicesMenuPos] = useState({ top: 0, left: 0 });
+  const navScrollRef = useRef<HTMLDivElement>(null);
+  const navScrollSavedRef = useRef<number | null>(null);
+  const servicesNavItemRef = useRef<HTMLLIElement>(null);
+  const servicesAnchorRef = useRef<HTMLButtonElement>(null);
+  const servicesCloseTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const servicesMenuPanelId = useId();
 
-  function handleServicesBlur(e: FocusEvent<HTMLDivElement>) {
-    const next = e.relatedTarget;
-    if (next instanceof Node && e.currentTarget.contains(next)) return;
-    setServicesMenuOpen(false);
+  const updateNavScrollState = useCallback(() => {
+    const el = navScrollRef.current;
+    if (!el) return;
+    const { scrollLeft, scrollWidth, clientWidth } = el;
+    const overflow = scrollWidth > clientWidth + 2;
+    setNavOverflow(overflow);
+    setCanScrollLeft(overflow && scrollLeft > 4);
+    setCanScrollRight(overflow && scrollLeft + clientWidth < scrollWidth - 4);
+  }, []);
+
+  function scrollNav(direction: 'left' | 'right') {
+    const el = navScrollRef.current;
+    if (!el) return;
+    const step = Math.max(160, Math.floor(el.clientWidth * 0.55));
+    el.scrollBy({ left: direction === 'left' ? -step : step, behavior: 'smooth' });
+  }
+
+  const scrollNavToServicios = useCallback((smooth = false) => {
+    const container = navScrollRef.current;
+    const item = servicesNavItemRef.current;
+    if (!container || !item) return;
+
+    const maxScroll = container.scrollWidth - container.clientWidth;
+    if (maxScroll <= 0) return;
+
+    const itemLeft = item.offsetLeft;
+    const itemRight = itemLeft + item.offsetWidth;
+    const viewLeft = container.scrollLeft;
+    const viewRight = viewLeft + container.clientWidth;
+    const padding = 20;
+
+    if (itemLeft >= viewLeft + padding && itemRight <= viewRight - padding) return;
+
+    let target = itemRight - container.clientWidth + padding;
+    target = Math.max(0, Math.min(target, maxScroll));
+    container.scrollTo({ left: target, behavior: smooth ? 'smooth' : 'auto' });
+  }, []);
+
+  useEffect(() => {
+    updateNavScrollState();
+    const el = navScrollRef.current;
+    if (!el) return;
+
+    el.addEventListener('scroll', updateNavScrollState, { passive: true });
+    const observer = new ResizeObserver(updateNavScrollState);
+    observer.observe(el);
+
+    window.addEventListener('resize', updateNavScrollState);
+    const t = window.setTimeout(updateNavScrollState, 120);
+
+    return () => {
+      el.removeEventListener('scroll', updateNavScrollState);
+      observer.disconnect();
+      window.removeEventListener('resize', updateNavScrollState);
+      window.clearTimeout(t);
+    };
+  }, [updateNavScrollState]);
+
+  useEffect(() => {
+    if (!pathname.startsWith('/servicios/')) return;
+    const el = navScrollRef.current;
+    if (!el) return;
+
+    const saveScroll = () => {
+      navScrollSavedRef.current = el.scrollLeft;
+    };
+    saveScroll();
+    el.addEventListener('scroll', saveScroll, { passive: true });
+    return () => el.removeEventListener('scroll', saveScroll);
+  }, [pathname]);
+
+  useLayoutEffect(() => {
+    if (!pathname.startsWith('/servicios/')) return;
+
+    const el = navScrollRef.current;
+    if (!el) return;
+
+    const saved = navScrollSavedRef.current;
+    if (saved != null) {
+      el.scrollLeft = saved;
+      updateNavScrollState();
+      return;
+    }
+
+    scrollNavToServicios(false);
+    navScrollSavedRef.current = el.scrollLeft;
+    updateNavScrollState();
+  }, [pathname, scrollNavToServicios, updateNavScrollState]);
+
+  const syncActiveFromUrl = useCallback(() => {
+    const hash = window.location.hash;
+    if (pathname === '/' || pathname === '') {
+      setActiveNavHref(hash ? `/${hash}` : '/');
+      return;
+    }
+    setActiveNavHref(pathname);
+  }, [pathname]);
+
+  useEffect(() => {
+    syncActiveFromUrl();
+    window.addEventListener('hashchange', syncActiveFromUrl);
+    window.addEventListener('popstate', syncActiveFromUrl);
+    return () => {
+      window.removeEventListener('hashchange', syncActiveFromUrl);
+      window.removeEventListener('popstate', syncActiveFromUrl);
+    };
+  }, [syncActiveFromUrl]);
+
+  function linkIsActive(href: string): boolean {
+    if (activeNavHref === href) return true;
+    if (!href.startsWith('/#') && href !== '/') {
+      return pathname === href || pathname.startsWith(`${href}/`);
+    }
+    return false;
+  }
+
+  function handleNavClick(href: string) {
+    setActiveNavHref(href);
+    if (typeof window === 'undefined') return;
+    if (href.startsWith('/#')) {
+      window.history.replaceState(null, '', href);
+    } else if (href === '/' && (pathname === '/' || pathname === '')) {
+      window.history.replaceState(null, '', '/');
+    }
+  }
+
+  const updateServicesMenuPos = useCallback(() => {
+    const btn = servicesAnchorRef.current;
+    if (!btn) return;
+    const rect = btn.getBoundingClientRect();
+    setServicesMenuPos({
+      top: rect.bottom + 6,
+      left: rect.left + rect.width / 2,
+    });
+  }, []);
+
+  function cancelServicesClose() {
+    if (servicesCloseTimerRef.current) {
+      window.clearTimeout(servicesCloseTimerRef.current);
+      servicesCloseTimerRef.current = null;
+    }
+  }
+
+  function scheduleServicesClose() {
+    cancelServicesClose();
+    servicesCloseTimerRef.current = window.setTimeout(() => setServicesMenuOpen(false), 160);
+  }
+
+  function openServicesMenu() {
+    cancelServicesClose();
+    updateServicesMenuPos();
+    setServicesMenuOpen(true);
+  }
+
+  useEffect(() => {
+    if (!servicesMenuOpen) return;
+    updateServicesMenuPos();
+    window.addEventListener('resize', updateServicesMenuPos);
+    window.addEventListener('scroll', updateServicesMenuPos, true);
+    return () => {
+      window.removeEventListener('resize', updateServicesMenuPos);
+      window.removeEventListener('scroll', updateServicesMenuPos, true);
+    };
+  }, [servicesMenuOpen, updateServicesMenuPos]);
+
+  function navLinkClass(href: string): string {
+    const active = linkIsActive(href);
+    return [
+      'relative inline-flex whitespace-nowrap px-2 py-2 text-[13px] font-medium text-slate-700 transition-colors xl:text-sm',
+      'after:pointer-events-none after:absolute after:inset-x-1 after:bottom-0 after:h-0.5 after:rounded-full after:bg-blue-600 after:transition-transform after:duration-200',
+      active
+        ? 'font-semibold text-blue-700 after:!scale-x-100'
+        : 'after:scale-x-0 hover:text-blue-700',
+    ].join(' ');
   }
 
   const refreshSession = useCallback(() => {
@@ -105,12 +304,56 @@ export default function Header() {
 
   const serviceMenuLinks = serviceLinks.slice(0, -1);
   const certificacionesLink = serviceLinks[serviceLinks.length - 1]!;
+  const servicesNavActive = serviceMenuLinks.some((l) => linkIsActive(l.href));
+
+  const servicesMenuPortal =
+    servicesMenuOpen && typeof document !== 'undefined'
+      ? createPortal(
+          <div
+            id={servicesMenuPanelId}
+            role="region"
+            aria-label="Enlaces de servicios"
+            className="fixed z-[200] min-w-[min(100vw-2rem,17rem)] -translate-x-1/2"
+            style={{ top: servicesMenuPos.top, left: servicesMenuPos.left }}
+            onMouseEnter={cancelServicesClose}
+            onMouseLeave={scheduleServicesClose}
+          >
+            <div className="rounded-xl border border-slate-200/90 bg-gradient-to-b from-white via-white to-slate-50/90 py-2 shadow-xl shadow-slate-900/[0.08] ring-1 ring-slate-900/[0.05]">
+              <ul className="space-y-0.5 px-1.5 py-1">
+                {serviceMenuLinks.map((link) => (
+                  <li key={link.href}>
+                    <Link
+                      href={link.href}
+                      className="group mx-0 flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm text-slate-700 transition-colors hover:bg-blue-50/90 hover:text-blue-800"
+                      onClick={() => {
+                        const nav = navScrollRef.current;
+                        if (nav) navScrollSavedRef.current = nav.scrollLeft;
+                        setServicesMenuOpen(false);
+                        handleNavClick(link.href);
+                      }}
+                    >
+                      <span
+                        className="mt-px inline-flex h-5 w-5 shrink-0 items-center justify-center"
+                        aria-hidden
+                      >
+                        <span className="h-1.5 w-1.5 rounded-full bg-blue-400 transition-all group-hover:scale-125 group-hover:bg-blue-600" />
+                      </span>
+                      <span className="min-w-0 flex-1 leading-snug">{link.label}</span>
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          </div>,
+          document.body,
+        )
+      : null;
 
   return (
     <header className="sticky top-0 z-50 w-full bg-white shadow-sm">
       {/* Top utility bar */}
       <div className="hidden lg:block bg-slate-900 text-slate-300 text-xs">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex justify-between items-center h-9">
+        <div className="mx-auto flex h-9 w-full max-w-[90rem] items-center justify-between px-4 sm:px-6 lg:px-8 xl:px-10">
           <div className="flex gap-4">
             <span>📞 +57 315 050 2630</span>
             <span>✉ contacto@projectvigia.co</span>
@@ -156,161 +399,160 @@ export default function Header() {
         </div>
       </div>
 
-      {/* Main bar with logo + nav */}
+      {/* Fila 1: logo (izq) · menú principal (centro) · CTA (der) */}
       <div className="border-b border-slate-200">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center h-20 gap-3 lg:gap-4">
-            {/* Logo */}
-            <Link href="/" className="flex shrink-0 items-center gap-3 group">
+        <div className="mx-auto w-full max-w-[90rem] px-4 sm:px-6 lg:px-8 xl:px-10">
+          <div className="flex h-20 items-center justify-between gap-4 lg:gap-6">
+            <Link
+              href="/"
+              className="group flex shrink-0 items-center gap-3"
+              onClick={() => handleNavClick('/')}
+            >
               <Logo size={48} className="transition-transform group-hover:scale-105" />
-              <div className="hidden sm:flex flex-col leading-tight">
+              <div className="hidden flex-col leading-tight sm:flex">
                 <span className="text-xl font-bold text-slate-900">
                   PROJECT <span className="text-blue-600">VIGIA</span>
                 </span>
-                <span className="text-xs text-slate-500 uppercase tracking-wider">
-                  SaaS · varios sectores
-                </span>
+                <span className="text-xs uppercase tracking-wider text-slate-500">SaaS · varios sectores</span>
               </div>
             </Link>
 
-            {/* Desktop: una sola fila centrada (sin salto feo bajo Testimonios) */}
             <nav
-              className="hidden lg:flex flex-1 min-w-0 items-center justify-center px-1 xl:px-2"
+              className="hidden min-w-0 flex-1 items-center lg:flex"
               aria-label="Navegación principal"
             >
-              <ul className="flex max-w-full flex-nowrap items-center justify-center gap-x-2 xl:gap-x-3">
-                {siteNavLinks.map((link) => (
-                  <li key={link.label} className="shrink-0">
-                    <Link
-                      href={link.href}
-                      className="whitespace-nowrap text-[13px] font-medium text-slate-700 transition hover:text-blue-700 xl:text-sm"
+              <div className="flex min-w-0 flex-1 items-center gap-1">
+                <div className="flex h-8 w-8 shrink-0 items-center justify-center">
+                  {navOverflow ? (
+                    <button
+                      type="button"
+                      onClick={() => scrollNav('left')}
+                      disabled={!canScrollLeft}
+                      className="flex h-8 w-8 items-center justify-center rounded-full border border-slate-200 bg-white text-slate-600 shadow-sm transition hover:border-blue-300 hover:text-blue-600 disabled:pointer-events-none disabled:opacity-30"
+                      aria-label="Ver enlaces anteriores"
                     >
-                      {link.label}
-                    </Link>
-                  </li>
-                ))}
-                <li className="mx-0.5 hidden h-4 w-px shrink-0 bg-slate-300 sm:block" aria-hidden />
-                {accountNavLinks.map((link) => (
-                  <li key={link.label} className="shrink-0">
-                    <Link
-                      href={link.href}
-                      className="whitespace-nowrap text-[13px] font-medium text-slate-700 transition hover:text-blue-700 xl:text-sm"
-                    >
-                      {link.label}
-                    </Link>
-                  </li>
-                ))}
-              </ul>
-            </nav>
+                      <NavChevronIcon direction="left" className="h-4 w-4" />
+                    </button>
+                  ) : null}
+                </div>
 
-            <Link
-              href="/asesoria"
-              className="hidden lg:inline-flex shrink-0 items-center px-3.5 py-2 xl:px-5 xl:py-2.5 rounded-md bg-blue-600 text-white text-xs xl:text-sm font-semibold hover:bg-blue-700 transition shadow"
-            >
-              Solicitar asesoría
-            </Link>
-
-            {/* Mobile Menu Button */}
-            <button
-              className="lg:hidden p-2 text-slate-700 ml-auto"
-              onClick={() => setIsOpen(!isOpen)}
-              aria-label="Toggle menu"
-            >
-              <svg
-                className="w-6 h-6"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d={isOpen ? 'M6 18L18 6M6 6l12 12' : 'M4 6h16M4 12h16M4 18h16'}
-                />
-              </svg>
-            </button>
-          </div>
-        </div>
-      </div>
-
-      {/* Services / categories bar */}
-      <div className="hidden lg:block bg-slate-50 border-b border-slate-200">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <nav
-            aria-label="Servicios y certificaciones"
-            className="flex items-center justify-center gap-12 xl:gap-14 h-12"
-          >
-            <div
-              className={`relative z-50 ${servicesMenuOpen ? 'z-[60]' : ''}`}
-              onMouseEnter={() => setServicesMenuOpen(true)}
-              onMouseLeave={() => setServicesMenuOpen(false)}
-              onFocusCapture={() => setServicesMenuOpen(true)}
-              onBlur={handleServicesBlur}
-            >
-              <button
-                type="button"
-                className={`flex h-12 items-center gap-1.5 text-sm font-medium outline-none transition hover:text-blue-700 ${servicesMenuOpen ? 'text-blue-700' : 'text-slate-700'}`}
-                aria-expanded={servicesMenuOpen}
-                aria-haspopup="true"
-                aria-controls={servicesMenuPanelId}
-              >
-                Servicios
-                <svg
-                  className={`h-4 w-4 shrink-0 text-slate-500 transition duration-200 ${servicesMenuOpen ? 'rotate-180' : ''}`}
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                  aria-hidden
+                <div
+                  ref={navScrollRef}
+                  className="min-w-0 flex-1 overflow-x-auto scroll-smooth [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden"
                 >
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                </svg>
-              </button>
-              <div
-                id={servicesMenuPanelId}
-                role="region"
-                aria-label="Enlaces de servicios"
-                hidden={!servicesMenuOpen}
-                className="absolute left-0 top-full z-50 min-w-[min(100vw-2rem,17rem)] -mt-2 pt-2"
-              >
-                <div className="rounded-xl border border-slate-200/90 bg-gradient-to-b from-white via-white to-slate-50/90 py-2 shadow-xl shadow-slate-900/[0.08] ring-1 ring-slate-900/[0.05]">
-                  <ul className="space-y-0.5 px-1.5 py-1">
-                    {serviceMenuLinks.map((link) => (
-                      <li key={link.href}>
+                  <ul className="flex w-max flex-nowrap items-center gap-x-2 px-1 xl:gap-x-3">
+                    {siteNavLinks.map((link) => (
+                      <li key={link.label} className="shrink-0">
                         <Link
                           href={link.href}
-                          className="group mx-0 flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm text-slate-700 transition-colors hover:bg-blue-50/90 hover:text-blue-800 active:bg-blue-100/80"
+                          className={navLinkClass(link.href)}
+                          onClick={() => handleNavClick(link.href)}
                         >
-                          <span
-                            className="mt-px inline-flex h-5 w-5 shrink-0 items-center justify-center"
-                            aria-hidden
-                          >
-                            <span className="h-1.5 w-1.5 rounded-full bg-blue-400 shadow-sm shadow-blue-400/40 transition-all duration-200 group-hover:scale-125 group-hover:bg-blue-600 group-hover:shadow-[0_0_10px_rgba(37,99,235,0.35)]" />
-                          </span>
-                          <span className="min-w-0 flex-1 leading-snug">{link.label}</span>
-                          <svg
-                            className="h-4 w-4 shrink-0 text-blue-600 opacity-0 transition-all duration-200 -translate-x-1 group-hover:translate-x-0 group-hover:opacity-90"
-                            fill="none"
-                            stroke="currentColor"
-                            viewBox="0 0 24 24"
-                            aria-hidden
-                          >
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                          </svg>
+                          {link.label}
                         </Link>
                       </li>
                     ))}
+                    <li className="mx-0.5 h-4 w-px shrink-0 bg-slate-300" aria-hidden />
+                    {accountNavLinks.map((link) => (
+                      <li key={link.label} className="shrink-0">
+                        <Link
+                          href={link.href}
+                          className={navLinkClass(link.href)}
+                          onClick={() => handleNavClick(link.href)}
+                        >
+                          {link.label}
+                        </Link>
+                      </li>
+                    ))}
+                    <li className="mx-0.5 h-4 w-px shrink-0 bg-slate-300" aria-hidden />
+                    <li
+                      ref={servicesNavItemRef}
+                      className="relative shrink-0"
+                      onMouseEnter={openServicesMenu}
+                      onMouseLeave={scheduleServicesClose}
+                    >
+                      <button
+                        ref={servicesAnchorRef}
+                        type="button"
+                        className={[
+                          'relative inline-flex items-center gap-1 px-2 py-2 text-[13px] font-medium transition-colors xl:text-sm',
+                          'after:pointer-events-none after:absolute after:inset-x-1 after:bottom-0 after:h-0.5 after:rounded-full after:bg-blue-600 after:transition-transform after:duration-200',
+                          servicesMenuOpen || servicesNavActive
+                            ? 'font-semibold text-blue-700 after:!scale-x-100'
+                            : 'text-slate-700 after:scale-x-0 hover:text-blue-700',
+                        ].join(' ')}
+                        aria-expanded={servicesMenuOpen}
+                        aria-haspopup="true"
+                        aria-controls={servicesMenuPanelId}
+                        onClick={() => {
+                          if (servicesMenuOpen) setServicesMenuOpen(false);
+                          else openServicesMenu();
+                        }}
+                      >
+                        Servicios
+                        <svg
+                          className={`h-3.5 w-3.5 shrink-0 transition duration-200 ${servicesMenuOpen ? 'rotate-180' : ''}`}
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                          aria-hidden
+                        >
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                        </svg>
+                      </button>
+                    </li>
+                    <li className="shrink-0">
+                      <Link
+                        href={certificacionesLink.href}
+                        className={navLinkClass(certificacionesLink.href)}
+                        onClick={() => handleNavClick(certificacionesLink.href)}
+                      >
+                        {certificacionesLink.label}
+                      </Link>
+                    </li>
                   </ul>
                 </div>
+
+                <div className="flex h-8 w-8 shrink-0 items-center justify-center">
+                  {navOverflow ? (
+                    <button
+                      type="button"
+                      onClick={() => scrollNav('right')}
+                      disabled={!canScrollRight}
+                      className="flex h-8 w-8 items-center justify-center rounded-full border border-slate-200 bg-white text-slate-600 shadow-sm transition hover:border-blue-300 hover:text-blue-600 disabled:pointer-events-none disabled:opacity-30"
+                      aria-label="Ver más enlaces"
+                    >
+                      <NavChevronIcon direction="right" className="h-4 w-4" />
+                    </button>
+                  ) : null}
+                </div>
               </div>
+            </nav>
+
+            <div className="flex shrink-0 items-center gap-2">
+              <Link
+                href="/asesoria"
+                className="hidden items-center rounded-md bg-blue-600 px-3.5 py-2 text-xs font-semibold text-white shadow transition hover:bg-blue-700 lg:inline-flex xl:px-5 xl:py-2.5 xl:text-sm"
+              >
+                Solicitar asesoría
+              </Link>
+              <button
+                type="button"
+                className="p-2 text-slate-700 lg:hidden"
+                onClick={() => setIsOpen(!isOpen)}
+                aria-label="Abrir menú"
+              >
+                <svg className="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d={isOpen ? 'M6 18L18 6M6 6l12 12' : 'M4 6h16M4 12h16M4 18h16'}
+                  />
+                </svg>
+              </button>
             </div>
-            <Link
-              href={certificacionesLink.href}
-              className="relative whitespace-nowrap text-sm font-medium text-slate-700 transition hover:text-blue-700 after:absolute after:-bottom-1 after:left-0 after:h-px after:w-full after:origin-left after:scale-x-0 after:bg-blue-600 after:transition-transform hover:after:scale-x-100"
-            >
-              {certificacionesLink.label}
-            </Link>
-          </nav>
+          </div>
         </div>
       </div>
 
@@ -322,8 +564,15 @@ export default function Header() {
               <Link
                 key={link.label}
                 href={link.href}
-                className="block px-3 py-2 rounded text-slate-700 hover:bg-slate-100 hover:text-blue-700 transition"
-                onClick={() => setIsOpen(false)}
+                className={`block border-l-[3px] px-3 py-2 transition ${
+                  linkIsActive(link.href)
+                    ? 'border-blue-600 bg-blue-50 font-semibold text-blue-700'
+                    : 'border-transparent text-slate-700 hover:bg-slate-100 hover:text-blue-700'
+                }`}
+                onClick={() => {
+                  handleNavClick(link.href);
+                  setIsOpen(false);
+                }}
               >
                 {link.label}
               </Link>
@@ -336,8 +585,15 @@ export default function Header() {
               <Link
                 key={link.label}
                 href={link.href}
-                className="block px-3 py-2 rounded text-slate-700 hover:bg-slate-100 hover:text-blue-700 transition"
-                onClick={() => setIsOpen(false)}
+                className={`block border-l-[3px] px-3 py-2 transition ${
+                  linkIsActive(link.href)
+                    ? 'border-blue-600 bg-blue-50 font-semibold text-blue-700'
+                    : 'border-transparent text-slate-700 hover:bg-slate-100 hover:text-blue-700'
+                }`}
+                onClick={() => {
+                  handleNavClick(link.href);
+                  setIsOpen(false);
+                }}
               >
                 {link.label}
               </Link>
@@ -436,6 +692,7 @@ export default function Header() {
         </div>
       )}
       <PqrsDialog open={pqrsOpen} onClose={() => setPqrsOpen(false)} />
+      {servicesMenuPortal}
     </header>
   );
 }
