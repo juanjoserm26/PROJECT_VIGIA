@@ -58,6 +58,7 @@ export async function POST(req: Request) {
       email?: string;
       email_verified?: boolean;
       name?: string;
+      picture?: string;
     };
 
     if (!userRes.ok || !profile.email) {
@@ -77,6 +78,7 @@ export async function POST(req: Request) {
       ok: true as const,
       email: user.email,
       name: `${user.nombres} ${user.apellidos}`.trim(),
+      avatarUrl: typeof profile.picture === 'string' ? profile.picture : undefined,
       user: toPublicUser(user),
       created: user.authProvider === 'google',
     });

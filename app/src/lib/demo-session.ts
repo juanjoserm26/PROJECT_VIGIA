@@ -8,6 +8,7 @@ export const VIGIA_SESSION_CHANGED_EVENT = 'vigia-demo-session-changed';
 export type DemoSession = {
   email: string;
   clientLabel: string;
+  avatarUrl?: string;
   createdAt: number;
   /** Cuenta recién creada: panel sin cámaras hasta contratar plan */
   freshAccount?: boolean;

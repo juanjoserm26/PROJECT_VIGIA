@@ -46,17 +46,18 @@ function GoogleLogo() {
   );
 }
 
-function sessionFromUser(user: StoredUser, freshAccount = false): DemoSession {
+function sessionFromUser(user: StoredUser, freshAccount = false, avatarUrl?: string): DemoSession {
   return {
     email: user.email,
     clientLabel: clientLabelFromProfile(user.nombres, user.apellidos),
+    avatarUrl,
     createdAt: Date.now(),
     freshAccount,
   };
 }
 
-export function buildSessionForUser(user: StoredUser, freshAccount = false): DemoSession {
-  return sessionFromUser(user, freshAccount);
+export function buildSessionForUser(user: StoredUser, freshAccount = false, avatarUrl?: string): DemoSession {
+  return sessionFromUser(user, freshAccount, avatarUrl);
 }
 
 function loadGsiScript(): Promise<void> {
@@ -104,20 +105,20 @@ export default function GoogleSignInPanel({ onSuccess, onCancel, compact }: Goog
   }, []);
 
   const loginWithUser = useCallback(
-    (user: StoredUser, freshAccount = false) => {
+    (user: StoredUser, freshAccount = false, avatarUrl?: string) => {
       setGoogleRememberedEmail(user.email);
       setBannerError(null);
       setError(null);
-      onSuccess(sessionFromUser(user, freshAccount));
+      onSuccess(sessionFromUser(user, freshAccount, avatarUrl));
     },
     [onSuccess],
   );
 
   const completeGoogleAuth = useCallback(
-    (publicUser: PublicStoredUser, message?: string) => {
+    (publicUser: PublicStoredUser, avatarUrl?: string, message?: string) => {
       const user = cacheUserFromPublic(publicUser, '');
       if (message) setBannerSuccess(message);
-      loginWithUser(user, false);
+      loginWithUser(user, false, avatarUrl);
     },
     [loginWithUser],
   );
@@ -168,7 +169,7 @@ export default function GoogleSignInPanel({ onSuccess, onCancel, compact }: Goog
             });
 
             const data = (await tokenRes.json()) as
-              | { ok: true; email: string; user: PublicStoredUser; created?: boolean }
+              | { ok: true; email: string; user: PublicStoredUser; created?: boolean; avatarUrl?: string }
               | { ok: false; error: string };
 
             if (!tokenRes.ok || !data.ok) {
@@ -186,6 +187,7 @@ export default function GoogleSignInPanel({ onSuccess, onCancel, compact }: Goog
 
             completeGoogleAuth(
               data.user,
+              data.avatarUrl,
               data.created
                 ? `Cuenta creada con ${data.email}. Ya puedes entrar con Google.`
                 : `Sesión iniciada como ${data.email}`,

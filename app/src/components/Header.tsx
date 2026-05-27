@@ -48,6 +48,45 @@ function DoorExitIcon({ className }: { className?: string }) {
   );
 }
 
+function initialsFromLabel(label: string): string {
+  const parts = label
+    .trim()
+    .split(/\s+/)
+    .filter(Boolean);
+  const a = parts[0]?.[0] ?? '';
+  const b = parts.length > 1 ? parts[1]?.[0] ?? '' : parts[0]?.[1] ?? '';
+  return `${a}${b}`.toUpperCase();
+}
+
+function UserSessionAvatar({
+  session,
+  size = 'md',
+}: {
+  session: DemoSession;
+  size?: 'sm' | 'md';
+}) {
+  const dim = size === 'sm' ? 'h-7 w-7 text-[10px]' : 'h-8 w-8 text-xs';
+  const ring = size === 'sm' ? 'ring-1 ring-white/20' : 'ring-2 ring-white/20';
+  return (
+    <span
+      className={`relative inline-flex shrink-0 items-center justify-center overflow-hidden rounded-full bg-gradient-to-br from-blue-500 to-blue-700 shadow-sm ${ring} ${dim}`}
+      title={session.clientLabel}
+    >
+      {session.avatarUrl ? (
+        // eslint-disable-next-line @next/next/no-img-element
+        <img
+          src={session.avatarUrl}
+          alt=""
+          className="h-full w-full object-cover"
+          referrerPolicy="no-referrer"
+        />
+      ) : (
+        <span className="font-bold leading-none text-white">{initialsFromLabel(session.clientLabel)}</span>
+      )}
+    </span>
+  );
+}
+
 export default function Header() {
   const router = useRouter();
   const pathname = usePathname();
@@ -368,7 +407,8 @@ export default function Header() {
             </button>
             {session ? (
               <>
-                <div className="flex min-w-0 max-w-[min(28rem,46vw)] items-center gap-2 border-r border-slate-600 pr-4 mr-1">
+                <div className="flex min-w-0 max-w-[min(28rem,46vw)] items-center gap-2.5 border-r border-slate-600 pr-4 mr-1">
+                  <UserSessionAvatar session={session} size="sm" />
                   <span className="truncate text-xs font-semibold text-white">{session.clientLabel}</span>
                   <span className="shrink-0 text-slate-500" aria-hidden>
                     ·
@@ -645,14 +685,14 @@ export default function Header() {
             </button>
             {session ? (
               <>
-                <div className="mx-3 my-2 min-w-0 rounded-lg border border-slate-200 bg-slate-50 px-3 py-2">
+                <div className="mx-3 my-2 flex min-w-0 items-center gap-3 rounded-lg border border-slate-200 bg-slate-50 px-3 py-2.5">
+                  <UserSessionAvatar session={session} />
                   <p
-                    className="truncate text-xs text-slate-800"
+                    className="min-w-0 flex-1 truncate text-xs text-slate-800"
                     title={`${session.clientLabel} · ${session.email}`}
                   >
-                    <span className="font-semibold">{session.clientLabel}</span>
-                    <span className="text-slate-400"> · </span>
-                    <span className="text-slate-600">{session.email}</span>
+                    <span className="block truncate font-semibold">{session.clientLabel}</span>
+                    <span className="block truncate text-slate-600">{session.email}</span>
                   </p>
                 </div>
                 <button
