@@ -76,7 +76,7 @@ export default function Header() {
     router.push('/');
   }
 
-  const topLinks = [
+  const siteNavLinks = [
     { label: 'Inicio', href: '/' },
     { label: 'Nosotros', href: '/#what-defines-us' },
     { label: 'Equipo', href: '/#team' },
@@ -84,10 +84,15 @@ export default function Header() {
     { label: 'Testimonios', href: '/#testimonials' },
     { label: 'Blog', href: '/blog' },
     { label: 'Contacto', href: '/#contact' },
+  ];
+
+  const accountNavLinks = [
     { label: 'Demostración', href: '/demostracion' },
     { label: 'Mis cámaras', href: '/monitoreo' },
     { label: 'Mis planes', href: '/mis-planes' },
   ];
+
+  const topLinks = [...siteNavLinks, ...accountNavLinks];
 
   const serviceLinks = [
     { label: 'Vigilancia con IA', href: '/servicios/vigilancia-con-ia' },
@@ -168,22 +173,39 @@ export default function Header() {
               </div>
             </Link>
 
-            {/* Desktop: enlaces repartidos entre logo y CTA */}
-            <nav className="hidden lg:flex flex-1 items-center justify-center gap-x-4 xl:gap-x-6 min-w-0 px-2 xl:px-4 flex-wrap">
-              {topLinks.map((link) => (
-                <Link
-                  key={link.label}
-                  href={link.href}
-                  className="whitespace-nowrap text-center text-sm text-slate-700 hover:text-blue-700 transition font-medium shrink-0"
-                >
-                  {link.label}
-                </Link>
-              ))}
+            {/* Desktop: una sola fila centrada (sin salto feo bajo Testimonios) */}
+            <nav
+              className="hidden lg:flex flex-1 min-w-0 items-center justify-center px-1 xl:px-2"
+              aria-label="Navegación principal"
+            >
+              <ul className="flex max-w-full flex-nowrap items-center justify-center gap-x-2 xl:gap-x-3">
+                {siteNavLinks.map((link) => (
+                  <li key={link.label} className="shrink-0">
+                    <Link
+                      href={link.href}
+                      className="whitespace-nowrap text-[13px] font-medium text-slate-700 transition hover:text-blue-700 xl:text-sm"
+                    >
+                      {link.label}
+                    </Link>
+                  </li>
+                ))}
+                <li className="mx-0.5 hidden h-4 w-px shrink-0 bg-slate-300 sm:block" aria-hidden />
+                {accountNavLinks.map((link) => (
+                  <li key={link.label} className="shrink-0">
+                    <Link
+                      href={link.href}
+                      className="whitespace-nowrap text-[13px] font-medium text-slate-700 transition hover:text-blue-700 xl:text-sm"
+                    >
+                      {link.label}
+                    </Link>
+                  </li>
+                ))}
+              </ul>
             </nav>
 
             <Link
               href="/asesoria"
-              className="hidden lg:inline-flex shrink-0 items-center px-5 py-2.5 rounded-md bg-blue-600 text-white text-sm font-semibold hover:bg-blue-700 transition shadow"
+              className="hidden lg:inline-flex shrink-0 items-center px-3.5 py-2 xl:px-5 xl:py-2.5 rounded-md bg-blue-600 text-white text-xs xl:text-sm font-semibold hover:bg-blue-700 transition shadow"
             >
               Solicitar asesoría
             </Link>
@@ -296,7 +318,21 @@ export default function Header() {
       {isOpen && (
         <div className="lg:hidden bg-white border-t border-slate-200">
           <nav className="px-4 py-3 space-y-1">
-            {topLinks.map((link) => (
+            {siteNavLinks.map((link) => (
+              <Link
+                key={link.label}
+                href={link.href}
+                className="block px-3 py-2 rounded text-slate-700 hover:bg-slate-100 hover:text-blue-700 transition"
+                onClick={() => setIsOpen(false)}
+              >
+                {link.label}
+              </Link>
+            ))}
+            <div className="border-t border-slate-200 my-2" />
+            <p className="px-3 pb-1 text-xs font-semibold uppercase tracking-wider text-slate-400">
+              Tu cuenta
+            </p>
+            {accountNavLinks.map((link) => (
               <Link
                 key={link.label}
                 href={link.href}
