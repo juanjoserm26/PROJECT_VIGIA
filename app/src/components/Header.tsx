@@ -7,7 +7,7 @@ import { createPortal } from 'react-dom';
 import Logo from './Logo';
 import PqrsDialog from './PqrsDialog';
 import NotificationsBell from './NotificationsBell';
-import { clearDemoSession, DEMO_SESSION_KEY, getDemoSession, type DemoSession, VIGIA_SESSION_CHANGED_EVENT } from '@/lib/demo-session';
+import { DEMO_SESSION_KEY, getDemoSession, logoutVigiaSession, type DemoSession, VIGIA_SESSION_CHANGED_EVENT } from '@/lib/demo-session';
 
 /** Puerta entreabierta + salida (línea fina, para “cerrar sesión”) */
 function NavChevronIcon({ direction, className }: { direction: 'left' | 'right'; className?: string }) {
@@ -268,7 +268,7 @@ export default function Header() {
   }, [refreshSession]);
 
   function handleLogout() {
-    clearDemoSession();
+    logoutVigiaSession();
     setSession(null);
     setIsOpen(false);
     router.refresh();

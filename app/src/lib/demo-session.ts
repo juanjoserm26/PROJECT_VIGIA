@@ -1,3 +1,5 @@
+import { setGoogleTrustedOnDevice } from '@/lib/user-store';
+
 export const DEMO_SESSION_KEY = 'vigia_demo_session';
 
 /** Se dispara en esta pestaña cuando cambia la sesión demo (login/logout). */
@@ -47,4 +49,10 @@ export function clearDemoSession(): void {
   if (typeof window === 'undefined') return;
   window.localStorage.removeItem(DEMO_SESSION_KEY);
   window.dispatchEvent(new CustomEvent(VIGIA_SESSION_CHANGED_EVENT));
+}
+
+/** Cierra sesión en la app y desactiva el acceso rápido de Google en este navegador. */
+export function logoutVigiaSession(): void {
+  clearDemoSession();
+  setGoogleTrustedOnDevice(false);
 }

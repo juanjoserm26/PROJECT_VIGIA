@@ -1,15 +1,12 @@
 ﻿'use client';
 
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import PasswordField, { authInputClass } from '@/components/PasswordField';
 import {
   authenticateUserAsync,
   cacheUserFromPublic,
-  findUserByEmailAsync,
   getGoogleRememberedEmail,
-  isGoogleTrustedOnDevice,
   setGoogleRememberedEmail,
-  setGoogleTrustedOnDevice,
   type PublicStoredUser,
   type StoredUser,
 } from '@/lib/user-store';
@@ -102,18 +99,13 @@ export default function GoogleSignInPanel({ onSuccess, onCancel, compact }: Goog
   const [bannerSuccess, setBannerSuccess] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
   const [remembered, setRemembered] = useState<string | null>(null);
-  const [trusted, setTrusted] = useState(false);
-  const quickLoginTried = useRef(false);
-
   useEffect(() => {
     setRemembered(getGoogleRememberedEmail());
-    setTrusted(isGoogleTrustedOnDevice());
   }, []);
 
   const loginWithUser = useCallback(
     (user: StoredUser, freshAccount = false) => {
       setGoogleRememberedEmail(user.email);
-      setGoogleTrustedOnDevice(true);
       setBannerError(null);
       setError(null);
       onSuccess(sessionFromUser(user, freshAccount));
@@ -129,16 +121,6 @@ export default function GoogleSignInPanel({ onSuccess, onCancel, compact }: Goog
     },
     [loginWithUser],
   );
-
-  useEffect(() => {
-    if (quickLoginTried.current || !trusted) return;
-    const saved = getGoogleRememberedEmail();
-    if (!saved) return;
-    quickLoginTried.current = true;
-    void findUserByEmailAsync(saved).then((user) => {
-      if (user) loginWithUser(user);
-    });
-  }, [trusted, loginWithUser]);
 
   async function startGoogleOAuthPopup() {
     setBannerError(null);
@@ -250,7 +232,6 @@ export default function GoogleSignInPanel({ onSuccess, onCancel, compact }: Goog
       return;
     }
     setRemembered(result.user.email);
-    setTrusted(true);
     loginWithUser(result.user);
   }
 
@@ -321,9 +302,9 @@ export default function GoogleSignInPanel({ onSuccess, onCancel, compact }: Goog
 
   return (
     <div>
-      {remembered && trusted ? (
+      {remembered ? (
         <p className="mb-2 text-center text-xs text-slate-500">
-          Acceso rápido: <strong className="text-slate-700">{remembered}</strong>
+          Último acceso con: <strong className="text-slate-700">{remembered}</strong>
         </p>
       ) : null}
       {bannerSuccess ? (
@@ -346,7 +327,8 @@ export default function GoogleSignInPanel({ onSuccess, onCancel, compact }: Goog
         {busy ? 'Abriendo Google…' : 'Iniciar sesión con Google'}
       </button>
       <p className="mt-2 text-center text-[11px] leading-relaxed text-slate-500">
-        Se abre la ventana oficial de Google. Si ya tienes sesión en el PC, entras con un clic.
+        Se abre la ventana oficial de Google. Puedes usar cualquier cuenta de Gmail; en la ventana
+        elige la tuya o «Usar otra cuenta».
       </p>
       <button
         type="button"
