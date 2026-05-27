@@ -275,6 +275,8 @@ export async function authenticateUserAsync(
   email: string,
   password: string,
 ): Promise<{ ok: true; user: StoredUser } | { ok: false; error: string }> {
+  const key = normalizeEmail(email);
+  const localUser = findUserByEmail(key);
   const localResult = authenticateUser(email, password);
 
   try {
@@ -294,6 +296,23 @@ export async function authenticateUserAsync(
 
     if (res.status === 401 && !data.ok && typeof data.error === 'string') {
       if (localResult.ok) return localResult;
+
+      if (localUser) {
+        return { ok: false, error: 'Contraseña incorrecta. Verifica e intenta de nuevo.' };
+      }
+
+      try {
+        const lookup = await fetch(`/api/users?email=${encodeURIComponent(key)}`);
+        if (lookup.ok) {
+          const lookupData = (await lookup.json()) as { ok?: boolean; user?: PublicStoredUser };
+          if (lookupData.ok && lookupData.user) {
+            return { ok: false, error: 'Contraseña incorrecta. Verifica e intenta de nuevo.' };
+          }
+        }
+      } catch {
+        /* ignore */
+      }
+
       return { ok: false, error: data.error };
     }
   } catch {

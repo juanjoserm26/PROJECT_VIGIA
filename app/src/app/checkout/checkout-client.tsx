@@ -57,6 +57,7 @@ export default function CheckoutClient() {
 
   const [checkoutAllowed, setCheckoutAllowed] = useState<boolean | undefined>(undefined);
   const planActivatedRef = useRef(false);
+  const [planActivationNote, setPlanActivationNote] = useState<string | null>(null);
 
   useEffect(() => {
     setCheckoutAllowed(getDemoSession() !== null);
@@ -67,8 +68,15 @@ export default function CheckoutClient() {
     const session = getDemoSession();
     if (!session) return;
     planActivatedRef.current = true;
-    activateUserPlan(session.email, planSlug);
-  }, [paymentState.step, planSlug]);
+    const result = activateUserPlan(session.email, planSlug);
+    if (result === 'already_owned') {
+      setPlanActivationNote(
+        `Ya tienes activo el ${selectedPlan.name}. Revisa la campana de notificaciones o elige otro plan si necesitas más capacidad.`,
+      );
+    } else {
+      setPlanActivationNote(null);
+    }
+  }, [paymentState.step, planSlug, selectedPlan.name]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -296,6 +304,14 @@ export default function CheckoutClient() {
                   </div>
 
                   <div className="space-y-6 p-6 sm:p-8">
+                    {planActivationNote ? (
+                      <div
+                        className="rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900"
+                        role="status"
+                      >
+                        {planActivationNote}
+                      </div>
+                    ) : null}
                     <div className="rounded-xl border border-slate-200 bg-slate-50/80 p-5">
                       <p className="mb-4 text-xs font-bold uppercase tracking-wider text-slate-500">
                         Detalle de la solicitud

@@ -68,3 +68,14 @@ export async function markPqrsReadServer(ids?: string[]): Promise<void> {
 export function countUnreadPqrs(items: PqrsSubmission[]): number {
   return items.filter((i) => !i.read).length;
 }
+
+export async function deletePqrsServer(ids: string[]): Promise<void> {
+  if (!ids.length) return;
+  const items = await readPqrsServer();
+  const idSet = new Set(ids);
+  await writePqrs(items.filter((item) => !idSet.has(item.id)));
+}
+
+export async function clearPqrsServer(): Promise<void> {
+  await writePqrs([]);
+}

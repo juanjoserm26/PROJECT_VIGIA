@@ -75,6 +75,9 @@ function pushAlert(
   const store = readStore();
   const list = store[key] ?? [];
 
+  const existing = list.find((a) => a.message === message);
+  if (existing) return existing;
+
   const alert: CameraAlert = {
     id: `cam-${Date.now()}-${Math.random().toString(36).slice(2, 9)}`,
     message,
@@ -108,6 +111,23 @@ export function markCameraAlertsRead(email: string): void {
   const list = store[key];
   if (!list?.length) return;
   store[key] = list.map((a) => ({ ...a, read: true, effectsPending: false }));
+  writeStore(store);
+}
+
+export function deleteCameraAlert(email: string, id: string): void {
+  const key = normalizeEmail(email);
+  const store = readStore();
+  const list = store[key];
+  if (!list) return;
+  store[key] = list.filter((a) => a.id !== id);
+  writeStore(store);
+}
+
+export function clearCameraAlerts(email: string): void {
+  const key = normalizeEmail(email);
+  const store = readStore();
+  if (!store[key]?.length) return;
+  store[key] = [];
   writeStore(store);
 }
 

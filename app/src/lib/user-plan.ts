@@ -1,6 +1,7 @@
 import type { PlanSlug } from '@/lib/subscription-plans';
 import { getDemoSession } from '@/lib/demo-session';
 import { ensureCameraAlertsForActivePlan, notifyCamerasActivated } from '@/lib/camera-alerts';
+import { notifyPlanAlreadyOwned, notifyPlanPurchased } from '@/lib/plan-notifications';
 
 export const USER_PLAN_STORAGE_KEY = 'vigia_active_plans_v1';
 export const USER_PLAN_CHANGED_EVENT = 'vigia-user-plan-changed';
@@ -42,18 +43,29 @@ export function getActiveUserPlan(email: string): ActiveUserPlan | null {
   return plans[normalizeEmail(email)] ?? null;
 }
 
+export type ActivateUserPlanResult = 'activated' | 'already_owned' | 'no_session';
+
 /** Tras comprar/simular checkout — solo con sesión activa. */
-export function activateUserPlan(email: string, planSlug: PlanSlug): void {
-  if (typeof window === 'undefined') return;
+export function activateUserPlan(email: string, planSlug: PlanSlug): ActivateUserPlanResult {
+  if (typeof window === 'undefined') return 'no_session';
   const session = getDemoSession();
-  if (!session) return;
+  if (!session) return 'no_session';
 
   const key = normalizeEmail(email);
   const plans = readPlans();
+  const current = plans[key];
+
+  if (current?.planSlug === planSlug) {
+    notifyPlanAlreadyOwned(key, planSlug);
+    return 'already_owned';
+  }
+
   plans[key] = { planSlug, activatedAt: Date.now() };
   writePlans(plans);
 
+  notifyPlanPurchased(key, planSlug);
   notifyCamerasActivated(key, { withEffects: true });
+  return 'activated';
 }
 
 /** Cuenta con plan previo: cámaras + alerta en campana sin sonido al recargar. */

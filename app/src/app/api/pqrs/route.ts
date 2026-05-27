@@ -1,7 +1,9 @@
 import { NextResponse } from 'next/server';
 import {
+  clearPqrsServer,
   countUnreadPqrs,
   createPqrsServer,
+  deletePqrsServer,
   markPqrsReadServer,
   readPqrsServer,
 } from '@/lib/pqrs-repository.server';
@@ -31,7 +33,25 @@ export async function GET() {
 export async function POST(request: Request) {
   try {
     const body = await request.json();
-    const { tipo, nombre, email, telefono, mensaje, markRead } = body;
+    const { tipo, nombre, email, telefono, mensaje, markRead, deleteAll, deleteIds } = body;
+
+    if (deleteAll === true) {
+      await clearPqrsServer();
+      return NextResponse.json({ ok: true as const, unreadCount: 0 });
+    }
+
+    if (Array.isArray(deleteIds) && deleteIds.length > 0) {
+      const ids = deleteIds.filter((id: unknown): id is string => typeof id === 'string');
+      await deletePqrsServer(ids);
+      const items = await readPqrsServer();
+      return NextResponse.json({
+        ok: true as const,
+        items: [...items].sort(
+          (a, b) => new Date(b.receivedAt).getTime() - new Date(a.receivedAt).getTime(),
+        ),
+        unreadCount: countUnreadPqrs(items),
+      });
+    }
 
     if (markRead === true) {
       const ids = Array.isArray(body.ids)
